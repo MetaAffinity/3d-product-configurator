@@ -15,7 +15,7 @@ export default function Insect(props) {
       )}'), auto`;
     }
     return () => (document.body.style.cursor = "auto");
-  }, [hovered]);
+  }, [hovered, snap]);
 
   return (
     <group

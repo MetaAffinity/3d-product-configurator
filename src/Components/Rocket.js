@@ -15,7 +15,7 @@ export default function Rocket(props) {
       )}'), auto`;
     }
     return () => (document.body.style.cursor = "auto");
-  }, [hovered]);
+  }, [hovered, snap]);
 
   return (
     <group

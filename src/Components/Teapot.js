@@ -15,7 +15,7 @@ export default function Teapot(props) {
       )}'), auto`;
     }
     return () => (document.body.style.cursor = "auto");
-  }, [hovered]);
+  }, [hovered, snap]);
 
   return (
     <group

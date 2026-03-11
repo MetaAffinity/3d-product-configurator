@@ -1,4 +1,4 @@
-import React, { Suspense, useState, useRef, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Float } from "@react-three/drei";
 import { proxy } from "valtio";
@@ -94,97 +94,6 @@ function App() {
     TeapotState.colors[pro] = value;
   };
 
-  const getActiveState = () => {
-    switch (selectedModel) {
-      case "Shoe": return ShoeState;
-      case "Rocket": return RocketState;
-      case "Axe": return AxeState;
-      case "Insect": return InsectState;
-      case "Teapot": return TeapotState;
-      default: return ShoeState;
-    }
-  };
-
-  const getActiveUpdateCurrent = () => {
-    switch (selectedModel) {
-      case "Shoe": return updateShoeCurrent;
-      case "Rocket": return updateRocketCurrent;
-      case "Axe": return updateAxeCurrent;
-      case "Insect": return updateInsectCurrent;
-      case "Teapot": return updateTeapotCurrent;
-      default: return updateShoeCurrent;
-    }
-  };
-
-  // Camera angles for each part [azimuthal, polar] in radians
-  const partCameraAngles = {
-    Shoe: {
-      laces: [0, 1.2],
-      mesh: [0.5, 1.4],
-      caps: [2.5, 1.3],
-      inner: [1.8, 0.8],
-      sole: [0.3, 2.2],
-      stripes: [-0.8, 1.3],
-      band: [-1.5, 1.4],
-      patch: [3.0, 1.2],
-    },
-    Rocket: {
-      hull: [0, 1.4],
-      base: [0, 2.0],
-      tip: [0, 0.6],
-      wings: [0.8, 1.8],
-      window: [-0.3, 1.0],
-    },
-    Axe: {
-      body: [0, 1.4],
-      design: [0.6, 1.2],
-      support: [-0.5, 1.5],
-      inner: [1.2, 1.0],
-    },
-    Insect: {
-      body: [0, 1.2],
-      shell: [0, 0.7],
-    },
-    Teapot: {
-      lid: [0, 0.6],
-      base: [0.5, 1.8],
-    },
-  };
-
-  const animateCamera = useCallback((targetAzimuthal, targetPolar) => {
-    if (!controls.current) return;
-    const ctrl = controls.current;
-    const startAzimuthal = ctrl.getAzimuthalAngle();
-    const startPolar = ctrl.getPolarAngle();
-    const duration = 600;
-    const startTime = Date.now();
-
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const t = Math.min(elapsed / duration, 1);
-      // ease in-out
-      const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-
-      ctrl.setAzimuthalAngle(startAzimuthal + (targetAzimuthal - startAzimuthal) * ease);
-      ctrl.setPolarAngle(startPolar + (targetPolar - startPolar) * ease);
-      ctrl.update();
-
-      if (t < 1) requestAnimationFrame(animate);
-    };
-    animate();
-  }, []);
-
-  const activeState = getActiveState();
-
-  useEffect(() => {
-    if (activeState.current && partCameraAngles[selectedModel]) {
-      const angles = partCameraAngles[selectedModel][activeState.current];
-      if (angles) {
-        animateCamera(angles[0], angles[1]);
-      }
-    }
-  }, [activeState.current, selectedModel, animateCamera]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const renderSelectedModel = () => {
     switch (selectedModel) {
       case "Shoe":
@@ -252,6 +161,28 @@ function App() {
         );
       default:
         break;
+    }
+  };
+
+  const getActiveState = () => {
+    switch (selectedModel) {
+      case "Shoe": return ShoeState;
+      case "Rocket": return RocketState;
+      case "Axe": return AxeState;
+      case "Insect": return InsectState;
+      case "Teapot": return TeapotState;
+      default: return ShoeState;
+    }
+  };
+
+  const getActiveUpdateCurrent = () => {
+    switch (selectedModel) {
+      case "Shoe": return updateShoeCurrent;
+      case "Rocket": return updateRocketCurrent;
+      case "Axe": return updateAxeCurrent;
+      case "Insect": return updateInsectCurrent;
+      case "Teapot": return updateTeapotCurrent;
+      default: return updateShoeCurrent;
     }
   };
 

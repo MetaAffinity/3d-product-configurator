@@ -1,7 +1,7 @@
 import React, { Suspense, useState, useRef, useEffect, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Float } from "@react-three/drei";
-import { proxy } from "valtio";
+import { proxy, useSnapshot } from "valtio";
 import Shoe from "./Components/Shoe";
 import Rocket from "./Components/Rocket";
 import Axe from "./Components/Axe";
@@ -174,16 +174,16 @@ function App() {
     animate();
   }, []);
 
-  const activeState = getActiveState();
+  const activeSnap = useSnapshot(getActiveState());
 
   useEffect(() => {
-    if (activeState.current && partCameraAngles[selectedModel]) {
-      const angles = partCameraAngles[selectedModel][activeState.current];
+    if (activeSnap.current && partCameraAngles[selectedModel]) {
+      const angles = partCameraAngles[selectedModel][activeSnap.current];
       if (angles) {
         animateCamera(angles[0], angles[1]);
       }
     }
-  }, [activeState.current, selectedModel, animateCamera]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeSnap.current, selectedModel, animateCamera]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const renderSelectedModel = () => {
     switch (selectedModel) {

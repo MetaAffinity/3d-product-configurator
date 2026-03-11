@@ -10,6 +10,7 @@ import ModelPicker from "./Components/ModelPicker";
 import ColorPicker from "./Components/ColorPicker";
 import Insect from "./Components/Insect";
 import Teapot from "./Components/Teapot";
+import PartsPicker from "./Components/PartsPicker";
 import { AiOutlineStar, AiFillStar } from "react-icons/ai";
 
 const RocketState = proxy({
@@ -163,6 +164,28 @@ function App() {
     }
   };
 
+  const getActiveState = () => {
+    switch (selectedModel) {
+      case "Shoe": return ShoeState;
+      case "Rocket": return RocketState;
+      case "Axe": return AxeState;
+      case "Insect": return InsectState;
+      case "Teapot": return TeapotState;
+      default: return ShoeState;
+    }
+  };
+
+  const getActiveUpdateCurrent = () => {
+    switch (selectedModel) {
+      case "Shoe": return updateShoeCurrent;
+      case "Rocket": return updateRocketCurrent;
+      case "Axe": return updateAxeCurrent;
+      case "Insect": return updateInsectCurrent;
+      case "Teapot": return updateTeapotCurrent;
+      default: return updateShoeCurrent;
+    }
+  };
+
   const updateSelectedModel = (selectedModel) => {
     controls.current.reset();
     setSelectedModel(selectedModel);
@@ -172,6 +195,7 @@ function App() {
     <>
       <ModelPicker updateSelectedModel={updateSelectedModel} />
       {renderSelectedColorPicker()}
+      <PartsPicker state={getActiveState()} updateCurrent={getActiveUpdateCurrent()} />
       <Canvas shadows camera={{ position: [1, 0, 2] }}>
         <ambientLight />
         <spotLight

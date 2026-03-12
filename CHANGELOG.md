@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [v1.2.1] - 2026-03-12
+
+### Added
+- **Predefined color swatches** — Each product part now has its own set of 8 curated colors (e.g. Shoe laces get red, blue, black, white etc.).
+- Color swatches show as circular buttons with hover/active effects.
+- Selected color is highlighted with a border.
+
+### Changed
+- **Camera rotation only from panel** — Clicking on the 3D model no longer triggers camera rotation, only the Parts Panel does.
+- Color picker UI redesigned with glassmorphism style (blur background, rounded corners, shadow).
+
+### Configuration
+- `ENABLE_FREE_COLOR_PICKER` flag in `ColorPicker.jsx` — set to `true` to show the HexColorPicker alongside swatches, `false` (default) for swatches only.
+- `productColors` object in `ColorPicker.jsx` — customize predefined colors per product per part.
+
+---
+
 ## [v1.2] - 2026-03-12
 
 ### Added
@@ -54,3 +71,4 @@ All notable changes to this project will be documented in this file.
 | `v1.0` | Initial release — original starting code |
 | `v1.1` / `release/v1.1` | Parts picker panel + bug fixes |
 | `v1.2` | Camera rotation + product name in panel |
+| `v1.2.1` | Predefined color swatches + toggleable free color picker |

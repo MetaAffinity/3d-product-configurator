@@ -108,21 +108,12 @@ code {
   position: absolute;
   bottom: 5%;
   left: 5%;
-
-  .holder {
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    color: #a8a8a8;
-
-    span {
-      margin-left: 4px;
-    }
-  }
-}
-
-.info-icon:hover {
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #c0c0c0;
+  opacity: 0.5;
 }
 
 .hidden {

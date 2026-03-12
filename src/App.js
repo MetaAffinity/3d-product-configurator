@@ -140,7 +140,7 @@ function App() {
         <OrbitControls ref={controls} maxDistance={5} minDistance={1.5} autoRotate={isRotating} autoRotateSpeed={4} />
       </Canvas>
       <div className="info-icon">
-        <AiOutlineCode color="#888" size={18} />
+        <AiOutlineCode size={15} />
         <span>imran/3d-product-customizer</span>
       </div>
     </>

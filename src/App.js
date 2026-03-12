@@ -137,7 +137,7 @@ function App() {
             {renderModel()}
           </Float>
         </Suspense>
-        <OrbitControls ref={controls} maxDistance={5} minDistance={1.5} autoRotate={isRotating} autoRotateSpeed={4} />
+        <OrbitControls ref={controls} maxDistance={5} minDistance={0.5} autoRotate={isRotating} autoRotateSpeed={4} />
       </Canvas>
       <div className="info-icon">
         <AiOutlineUser size={14} />

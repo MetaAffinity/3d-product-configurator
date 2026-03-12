@@ -40,36 +40,16 @@ export default function Sneaker(props) {
         props.updateCurrent(null);
       }}
     >
-      <mesh castShadow geometry={nodes.Stitches_Back.geometry} position={[0.005, 0.07, 0.145]}>
-        <meshStandardMaterial color={snap.stitches} name="stitches" />
-      </mesh>
-      <mesh castShadow geometry={nodes.Inside.geometry}>
-        <meshStandardMaterial color={snap.inside} name="inside" />
-      </mesh>
-      <mesh castShadow geometry={nodes.Stitches_Front.geometry} position={[0.005, 0.07, 0.145]}>
-        <meshStandardMaterial color={snap.stitches} name="stitches" />
-      </mesh>
-      <mesh castShadow geometry={nodes.Strap.geometry} position={[0.005, 0.07, 0.145]}>
-        <meshStandardMaterial color={snap.strap} name="strap" />
-      </mesh>
-      <mesh castShadow geometry={nodes.Sole.geometry}>
-        <meshStandardMaterial color={snap.sole} name="sole" />
-      </mesh>
-      <mesh castShadow geometry={nodes.Front.geometry}>
-        <meshStandardMaterial color={snap.front} name="front" />
-      </mesh>
-      <mesh castShadow geometry={nodes.Flaps.geometry}>
-        <meshStandardMaterial color={snap.flaps} name="flaps" />
-      </mesh>
-      <mesh castShadow geometry={nodes.Middle.geometry}>
-        <meshStandardMaterial color={snap.middle} name="middle" />
-      </mesh>
-      <mesh castShadow geometry={nodes.Top.geometry}>
-        <meshStandardMaterial color={snap.top} name="top" />
-      </mesh>
-      <mesh castShadow geometry={nodes.Laces.geometry}>
-        <meshStandardMaterial color={snap.laces} name="laces" />
-      </mesh>
+      <mesh castShadow material-color={snap.stitches} geometry={nodes.Stitches_Back.geometry} material={materials.Stitches} position={[0.005, 0.07, 0.145]} />
+      <mesh castShadow material-color={snap.inside} geometry={nodes.Inside.geometry} material={materials.Inside} />
+      <mesh castShadow material-color={snap.stitches} geometry={nodes.Stitches_Front.geometry} material={materials['Stitches.001']} position={[0.005, 0.07, 0.145]} />
+      <mesh castShadow material-color={snap.strap} geometry={nodes.Strap.geometry} material={materials.Top} position={[0.005, 0.07, 0.145]} />
+      <mesh castShadow material-color={snap.sole} geometry={nodes.Sole.geometry} material={materials.Sole} />
+      <mesh castShadow material-color={snap.front} geometry={nodes.Front.geometry} material={materials.Front} />
+      <mesh castShadow material-color={snap.flaps} geometry={nodes.Flaps.geometry} material={materials.Flaps} />
+      <mesh castShadow material-color={snap.middle} geometry={nodes.Middle.geometry} material={materials.Middle} />
+      <mesh castShadow material-color={snap.top} geometry={nodes.Top.geometry} material={materials.Top} />
+      <mesh castShadow material-color={snap.laces} geometry={nodes.Laces.geometry} material={materials.Laces} />
     </group>
   );
 }

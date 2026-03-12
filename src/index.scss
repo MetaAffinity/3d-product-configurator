@@ -127,6 +127,51 @@ code {
 
 .hidden {
   opacity: 0;
+  pointer-events: none;
+}
+
+.toolbar {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  .toolbar-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 14px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #555;
+    transition: all 0.2s;
+    font-family: inherit;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.08);
+      color: #222;
+    }
+
+    &.active {
+      background: #333;
+      color: #fff;
+    }
+
+    span {
+      white-space: nowrap;
+    }
+  }
 }
 
 .parts-picker {

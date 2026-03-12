@@ -11,6 +11,7 @@ import ColorPicker from "./Components/ColorPicker";
 import Insect from "./Components/Insect";
 import Teapot from "./Components/Teapot";
 import PartsPicker from "./Components/PartsPicker";
+import Toolbar from "./Components/Toolbar";
 import { AiOutlineStar, AiFillStar } from "react-icons/ai";
 
 const RocketState = proxy({
@@ -57,7 +58,10 @@ const TeapotState = proxy({
 function App() {
   const [selectedModel, setSelectedModel] = useState("Shoe");
   const [linkOpened, setLinkOpened] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const controls = useRef();
+  const canvasRef = useRef();
 
   const updateShoeCurrent = (value) => {
     ShoeState.current = value;
@@ -253,6 +257,57 @@ function App() {
     }
   };
 
+  // Screenshot: capture canvas and download as PNG
+  const handleScreenshot = () => {
+    const canvas = document.querySelector("canvas");
+    if (!canvas) return;
+    const link = document.createElement("a");
+    link.download = `${selectedModel}-screenshot.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
+
+  // Auto-rotate toggle
+  const handleToggleRotate = () => {
+    setIsRotating((prev) => !prev);
+  };
+
+  // Reset camera to default
+  const handleResetView = () => {
+    if (controls.current) {
+      controls.current.reset();
+    }
+    setIsRotating(false);
+  };
+
+  // Fullscreen toggle
+  const handleToggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  // Zoom in/out
+  const handleZoomIn = () => {
+    if (!controls.current) return;
+    const camera = controls.current.object;
+    const dir = camera.position.clone().normalize();
+    camera.position.sub(dir.multiplyScalar(0.3));
+    controls.current.update();
+  };
+
+  const handleZoomOut = () => {
+    if (!controls.current) return;
+    const camera = controls.current.object;
+    const dir = camera.position.clone().normalize();
+    camera.position.add(dir.multiplyScalar(0.3));
+    controls.current.update();
+  };
+
   const updateSelectedModel = (selectedModel) => {
     controls.current.reset();
     setSelectedModel(selectedModel);
@@ -263,7 +318,17 @@ function App() {
       <ModelPicker updateSelectedModel={updateSelectedModel} />
       {renderSelectedColorPicker()}
       <PartsPicker state={getActiveState()} updateCurrent={handlePartSelect} modelName={selectedModel} />
-      <Canvas shadows camera={{ position: [1, 0, 2] }}>
+      <Toolbar
+        onScreenshot={handleScreenshot}
+        onToggleRotate={handleToggleRotate}
+        isRotating={isRotating}
+        onResetView={handleResetView}
+        onToggleFullscreen={handleToggleFullscreen}
+        isFullscreen={isFullscreen}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+      />
+      <Canvas ref={canvasRef} shadows camera={{ position: [1, 0, 2] }} gl={{ preserveDrawingBuffer: true }}>
         <ambientLight />
         <spotLight
           intensity={0.5}
@@ -289,7 +354,7 @@ function App() {
             {renderSelectedModel()}
           </Float>
         </Suspense>
-        <OrbitControls ref={controls} maxDistance={5} minDistance={1.5} />
+        <OrbitControls ref={controls} maxDistance={5} minDistance={1.5} autoRotate={isRotating} autoRotateSpeed={4} />
       </Canvas>
       <div className="info-icon">
         <div

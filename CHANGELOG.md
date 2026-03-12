@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [v1.2.2.1] - 2026-03-12
+
+### Added
+- **Sneaker model (GLB)** — New leather sneaker 3D model with 9 customizable parts: laces, front, middle, top, flaps, sole, strap, inside, stitches.
+- Full color swatches, camera angles, and model picker entry configured.
+- Demonstrates how easy it is to add new models with the config-driven architecture.
+
+---
+
 ## [v1.2.2] - 2026-03-12
 
 ### Added
@@ -91,3 +100,4 @@ All notable changes to this project will be documented in this file.
 | `v1.2` | Camera rotation + product name in panel |
 | `v1.2.1` | Predefined color swatches + toggleable free color picker |
 | `v1.2.2` | Toolbar: screenshot, auto-rotate, reset, zoom, fullscreen |
+| `v1.2.2.1` | Sneaker GLB model added with full config |

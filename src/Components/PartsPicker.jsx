@@ -4,8 +4,11 @@ import { modelConfig } from "../config/models";
 
 export default function PartsPicker({ state, updateCurrent, modelName }) {
   const snap = useSnapshot(state);
-  const parts = Object.keys(snap.colors);
   const optionsConfig = modelConfig[modelName]?.options;
+  // Hide parts that have a toggle option and it's off
+  const parts = Object.keys(snap.colors).filter(
+    (part) => !optionsConfig?.[part] || snap.options[part]
+  );
 
   return (
     <div className="parts-picker">

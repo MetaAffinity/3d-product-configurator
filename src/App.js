@@ -1,7 +1,7 @@
-import React, { Suspense, useState, useRef, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useRef, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Float } from "@react-three/drei";
-import { proxy, useSnapshot } from "valtio";
+import { proxy } from "valtio";
 import Shoe from "./Components/Shoe";
 import Rocket from "./Components/Rocket";
 import Axe from "./Components/Axe";
@@ -174,16 +174,14 @@ function App() {
     animate();
   }, []);
 
-  const activeSnap = useSnapshot(getActiveState());
-
-  useEffect(() => {
-    if (activeSnap.current && partCameraAngles[selectedModel]) {
-      const angles = partCameraAngles[selectedModel][activeSnap.current];
-      if (angles) {
-        animateCamera(angles[0], angles[1]);
-      }
+  const handlePartSelect = useCallback((part) => {
+    const updateCurrent = getActiveUpdateCurrent();
+    updateCurrent(part);
+    const angles = partCameraAngles[selectedModel]?.[part];
+    if (angles) {
+      animateCamera(angles[0], angles[1]);
     }
-  }, [activeSnap.current, selectedModel, animateCamera]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedModel, animateCamera]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const renderSelectedModel = () => {
     switch (selectedModel) {
@@ -264,7 +262,7 @@ function App() {
     <>
       <ModelPicker updateSelectedModel={updateSelectedModel} />
       {renderSelectedColorPicker()}
-      <PartsPicker state={getActiveState()} updateCurrent={getActiveUpdateCurrent()} modelName={selectedModel} />
+      <PartsPicker state={getActiveState()} updateCurrent={handlePartSelect} modelName={selectedModel} />
       <Canvas shadows camera={{ position: [1, 0, 2] }}>
         <ambientLight />
         <spotLight

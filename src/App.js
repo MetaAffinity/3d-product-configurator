@@ -138,6 +138,9 @@ function App() {
         </Suspense>
         <OrbitControls ref={controls} maxDistance={5} minDistance={1.5} autoRotate={isRotating} autoRotateSpeed={4} />
       </Canvas>
+      <div className="info-icon">
+        <span>imran/3d-product-customizer</span>
+      </div>
     </>
   );
 }

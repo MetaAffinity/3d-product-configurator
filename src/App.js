@@ -7,6 +7,7 @@ import ColorPicker from "./Components/ColorPicker";
 import PartsPicker from "./Components/PartsPicker";
 import Toolbar from "./Components/Toolbar";
 import { modelConfig, modelStates, defaultModel } from "./config/models";
+import { AiOutlineCode } from "react-icons/ai";
 
 function App() {
   const [selectedModel, setSelectedModel] = useState(defaultModel);
@@ -139,6 +140,7 @@ function App() {
         <OrbitControls ref={controls} maxDistance={5} minDistance={1.5} autoRotate={isRotating} autoRotateSpeed={4} />
       </Canvas>
       <div className="info-icon">
+        <AiOutlineCode color="#888" size={18} />
         <span>imran/3d-product-customizer</span>
       </div>
     </>

@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [v1.2.2] - 2026-03-12
+
+### Added
+- **Screenshot Button** — Captures the 3D canvas and downloads it as a PNG image named after the current model (e.g. `Shoe-screenshot.png`).
+- **Auto-Rotate 360** — Toggle button to start/stop continuous 360-degree rotation of the model. Click to start, click again to stop.
+- **Reset View** — Resets camera to default position and stops rotation.
+- **Zoom In/Out Buttons** — Quick zoom controls without using scroll wheel.
+- **Fullscreen Toggle** — Enter/exit fullscreen mode for immersive viewing.
+- **Toolbar UI** — All action buttons grouped in a glassmorphism toolbar at the bottom center of the screen.
+
+---
+
 ## [v1.2.1] - 2026-03-12
 
 ### Added
@@ -72,3 +84,4 @@ All notable changes to this project will be documented in this file.
 | `v1.1` / `release/v1.1` | Parts picker panel + bug fixes |
 | `v1.2` | Camera rotation + product name in panel |
 | `v1.2.1` | Predefined color swatches + toggleable free color picker |
+| `v1.2.2` | Toolbar: screenshot, auto-rotate, reset, zoom, fullscreen |

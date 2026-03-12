@@ -63,7 +63,7 @@ export default function Sneaker(props) {
         props.updateCurrent(null);
       }}
     >
-      <mesh castShadow material-color={snap.stitches} geometry={nodes.Stitches_Back.geometry} material={mats.stitches} position={[0.005, 0.07, 0.145]} />
+      {optionsSnap.strap && <mesh castShadow material-color={snap.stitches} geometry={nodes.Stitches_Back.geometry} material={mats.stitches} position={[0.005, 0.07, 0.145]} />}
       <mesh castShadow material-color={snap.inside} geometry={nodes.Inside.geometry} material={mats.inside} />
       <mesh castShadow material-color={snap.stitches} geometry={nodes.Stitches_Front.geometry} material={mats.stitches001} position={[0.005, 0.07, 0.145]} />
       {optionsSnap.strap && <mesh castShadow material-color={snap.strap} geometry={nodes.Strap.geometry} material={mats.strap} position={[0.005, 0.07, 0.145]} />}

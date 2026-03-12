@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 - Full color swatches, camera angles, and model picker entry configured.
 - Demonstrates how easy it is to add new models with the config-driven architecture.
 
+### Fixed
+- **Sneaker textures** — Use original GLB materials with `material-color` override instead of flat `meshStandardMaterial`, preserving leather textures and normal maps.
+- **Zoom on Sneaker** — Reduced `minDistance` from 1.5 to 0.5 so zoom works properly with the larger Sneaker model.
+
 ---
 
 ## [v1.2.2] - 2026-03-12

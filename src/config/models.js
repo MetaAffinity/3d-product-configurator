@@ -93,6 +93,7 @@ const modelConfig = {
   },
   Sneaker: {
     component: Sneaker,
+    minDistance: 0.5,
     colors: {
       laces: "#ffffff",
       front: "#ffffff",

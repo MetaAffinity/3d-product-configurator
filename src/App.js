@@ -141,7 +141,7 @@ function App() {
       </Canvas>
       <div className="info-icon">
         <AiOutlineUser size={14} />
-        <span>imran/3d-product-customizer</span>
+        <span>metaaffinity.net/3d-product-customizer</span>
       </div>
     </>
   );

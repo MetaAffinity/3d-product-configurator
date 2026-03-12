@@ -36,6 +36,17 @@ export const productColors = {
     lid: ["#d3d3d3", "#ffffff", "#ffd700", "#c0392b", "#2980b9", "#1abc9c", "#8e44ad", "#2c3e50"],
     base: ["#a8a8a8", "#ffffff", "#ffd700", "#c0392b", "#2980b9", "#1abc9c", "#8e44ad", "#2c3e50"],
   },
+  Sneaker: {
+    laces: ["#ffffff", "#000000", "#ff0000", "#0055ff", "#ffcc00", "#00cc44", "#8b4513", "#808080"],
+    front: ["#ffffff", "#000000", "#d3d3d3", "#1a1a2e", "#c0392b", "#2980b9", "#f39c12", "#8e44ad"],
+    middle: ["#ffffff", "#000000", "#d3d3d3", "#2c3e50", "#e74c3c", "#3498db", "#27ae60", "#f1c40f"],
+    top: ["#ffffff", "#000000", "#d3d3d3", "#1a1a2e", "#e94560", "#0f3460", "#533483", "#c0c0c0"],
+    flaps: ["#ffffff", "#000000", "#d3d3d3", "#c0392b", "#2980b9", "#1abc9c", "#8e44ad", "#f39c12"],
+    sole: ["#ffffff", "#e0e0e0", "#000000", "#d3d3d3", "#c0392b", "#2c3e50", "#8b4513", "#f39c12"],
+    strap: ["#ffffff", "#000000", "#d3d3d3", "#c0392b", "#2980b9", "#f1c40f", "#1abc9c", "#8e44ad"],
+    inside: ["#d3d3d3", "#ffffff", "#000000", "#f5e6ca", "#d4a373", "#b08968", "#2c3e50", "#808080"],
+    stitches: ["#cccccc", "#ffffff", "#000000", "#ff0000", "#ffd700", "#0055ff", "#00cc44", "#808080"],
+  },
 };
 
 export const defaultColors = ["#ffffff", "#000000", "#d3d3d3", "#a8a8a8", "#ff0000", "#0055ff", "#ffcc00", "#00cc44"];

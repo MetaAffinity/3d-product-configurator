@@ -4,6 +4,7 @@ import Rocket from "../Components/Rocket";
 import Axe from "../Components/Axe";
 import Insect from "../Components/Insect";
 import Teapot from "../Components/Teapot";
+import Sneaker from "../Components/Sneaker";
 
 // ============================================================
 // MODEL CONFIGURATION
@@ -88,6 +89,31 @@ const modelConfig = {
     cameraAngles: {
       lid: [0, 0.6],
       base: [0.5, 1.8],
+    },
+  },
+  Sneaker: {
+    component: Sneaker,
+    colors: {
+      laces: "#ffffff",
+      front: "#ffffff",
+      middle: "#ffffff",
+      top: "#ffffff",
+      flaps: "#ffffff",
+      sole: "#e0e0e0",
+      strap: "#ffffff",
+      inside: "#d3d3d3",
+      stitches: "#cccccc",
+    },
+    cameraAngles: {
+      laces: [0, 1.2],
+      front: [0.3, 1.3],
+      middle: [-0.8, 1.4],
+      top: [0, 0.8],
+      flaps: [1.5, 1.3],
+      sole: [0.3, 2.2],
+      strap: [0, 1.0],
+      inside: [1.8, 0.8],
+      stitches: [0.5, 1.5],
     },
   },
 };

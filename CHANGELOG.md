@@ -14,6 +14,12 @@ All notable changes to this project will be documented in this file.
 - **Fullscreen Toggle** — Enter/exit fullscreen mode for immersive viewing.
 - **Toolbar UI** — All action buttons grouped in a glassmorphism toolbar at the bottom center of the screen.
 
+### Refactored
+- **Config-driven architecture** — All model data (components, colors, camera angles) now lives in `src/config/models.js`. No more repetitive switch statements.
+- **Color swatches config** — Predefined colors moved to `src/config/swatches.js`.
+- **App.js reduced from ~380 lines to ~120 lines** — Clean, maintainable, easy to modify.
+- To add a new model: just add entry in `config/models.js` and `config/swatches.js` — everything else adapts automatically.
+
 ---
 
 ## [v1.2.1] - 2026-03-12

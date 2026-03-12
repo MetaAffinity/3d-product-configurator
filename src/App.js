@@ -264,7 +264,7 @@ function App() {
     <>
       <ModelPicker updateSelectedModel={updateSelectedModel} />
       {renderSelectedColorPicker()}
-      <PartsPicker state={getActiveState()} updateCurrent={getActiveUpdateCurrent()} />
+      <PartsPicker state={getActiveState()} updateCurrent={getActiveUpdateCurrent()} modelName={selectedModel} />
       <Canvas shadows camera={{ position: [1, 0, 2] }}>
         <ambientLight />
         <spotLight

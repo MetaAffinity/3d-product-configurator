@@ -1,13 +1,13 @@
 import React from "react";
 import { useSnapshot } from "valtio";
 
-export default function PartsPicker({ state, updateCurrent }) {
+export default function PartsPicker({ state, updateCurrent, modelName }) {
   const snap = useSnapshot(state);
   const parts = Object.keys(snap.colors);
 
   return (
     <div className="parts-picker">
-      <h3>Parts</h3>
+      <h3>{modelName} Parts</h3>
       <div className="parts-list">
         {parts.map((part) => (
           <div

@@ -222,4 +222,58 @@ code {
       flex-shrink: 0;
     }
   }
+
+  .parts-options {
+    margin-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding-top: 12px;
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+    }
+  }
+
+  .option-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+  }
+
+  .toggle-switch {
+    width: 38px;
+    height: 20px;
+    border-radius: 10px;
+    background: #ccc;
+    position: relative;
+    transition: background 0.2s;
+    cursor: pointer;
+
+    &.on {
+      background: #333;
+    }
+
+    .toggle-knob {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: left 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    &.on .toggle-knob {
+      left: 20px;
+    }
+  }
 }

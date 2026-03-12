@@ -64,6 +64,7 @@ function App() {
       <ModelComponent
         castShadow
         colors={state.colors}
+        options={state.options}
         updateCurrent={updateCurrent}
       />
     );

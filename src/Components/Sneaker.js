@@ -5,6 +5,7 @@ import { useSnapshot } from "valtio";
 export default function Sneaker(props) {
   const { nodes, materials } = useGLTF("/Sneaker/leather-sneakers.glb");
   const snap = useSnapshot(props.colors);
+  const optionsSnap = useSnapshot(props.options);
   const [hovered, setHovered] = useState(null);
 
   // Clone materials so each part can be colored independently
@@ -65,7 +66,7 @@ export default function Sneaker(props) {
       <mesh castShadow material-color={snap.stitches} geometry={nodes.Stitches_Back.geometry} material={mats.stitches} position={[0.005, 0.07, 0.145]} />
       <mesh castShadow material-color={snap.inside} geometry={nodes.Inside.geometry} material={mats.inside} />
       <mesh castShadow material-color={snap.stitches} geometry={nodes.Stitches_Front.geometry} material={mats.stitches001} position={[0.005, 0.07, 0.145]} />
-      <mesh castShadow material-color={snap.strap} geometry={nodes.Strap.geometry} material={mats.strap} position={[0.005, 0.07, 0.145]} />
+      {optionsSnap.strap && <mesh castShadow material-color={snap.strap} geometry={nodes.Strap.geometry} material={mats.strap} position={[0.005, 0.07, 0.145]} />}
       <mesh castShadow material-color={snap.sole} geometry={nodes.Sole.geometry} material={mats.sole} />
       <mesh castShadow material-color={snap.front} geometry={nodes.Front.geometry} material={mats.front} />
       <mesh castShadow material-color={snap.flaps} geometry={nodes.Flaps.geometry} material={mats.flaps} />

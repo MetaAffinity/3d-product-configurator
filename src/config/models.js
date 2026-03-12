@@ -105,6 +105,10 @@ const modelConfig = {
       inside: "#d3d3d3",
       stitches: "#cccccc",
     },
+    // Toggleable parts: { key: { label, default } }
+    options: {
+      strap: { label: "Back Strap", default: true },
+    },
     cameraAngles: {
       laces: [0, 1.2],
       front: [0.3, 1.3],
@@ -122,9 +126,15 @@ const modelConfig = {
 // Auto-generate proxy states from config
 const modelStates = {};
 Object.keys(modelConfig).forEach((name) => {
+  const opts = modelConfig[name].options || {};
+  const optionDefaults = {};
+  Object.keys(opts).forEach((key) => {
+    optionDefaults[key] = opts[key].default;
+  });
   modelStates[name] = proxy({
     current: null,
     colors: { ...modelConfig[name].colors },
+    options: optionDefaults,
   });
 });
 

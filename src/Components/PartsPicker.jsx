@@ -1,9 +1,11 @@
 import React from "react";
 import { useSnapshot } from "valtio";
+import { modelConfig } from "../config/models";
 
 export default function PartsPicker({ state, updateCurrent, modelName }) {
   const snap = useSnapshot(state);
   const parts = Object.keys(snap.colors);
+  const optionsConfig = modelConfig[modelName]?.options;
 
   return (
     <div className="parts-picker">
@@ -23,6 +25,22 @@ export default function PartsPicker({ state, updateCurrent, modelName }) {
           </div>
         ))}
       </div>
+      {optionsConfig && Object.keys(optionsConfig).length > 0 && (
+        <div className="parts-options">
+          <h3>Options</h3>
+          {Object.entries(optionsConfig).map(([key, opt]) => (
+            <label key={key} className="option-toggle">
+              <span>{opt.label}</span>
+              <div
+                className={`toggle-switch ${snap.options[key] ? "on" : ""}`}
+                onClick={() => { state.options[key] = !state.options[key]; }}
+              >
+                <div className="toggle-knob" />
+              </div>
+            </label>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

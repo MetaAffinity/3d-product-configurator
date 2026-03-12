@@ -233,20 +233,20 @@ function App() {
   const renderSelectedColorPicker = () => {
     switch (selectedModel) {
       case "Shoe":
-        return <ColorPicker state={ShoeState} updateColor={updateShoeColor} />;
+        return <ColorPicker state={ShoeState} updateColor={updateShoeColor} modelName="Shoe" />;
       case "Rocket":
         return (
-          <ColorPicker state={RocketState} updateColor={updateRocketColor} />
+          <ColorPicker state={RocketState} updateColor={updateRocketColor} modelName="Rocket" />
         );
       case "Axe":
-        return <ColorPicker state={AxeState} updateColor={updateAxeColor} />;
+        return <ColorPicker state={AxeState} updateColor={updateAxeColor} modelName="Axe" />;
       case "Insect":
         return (
-          <ColorPicker state={InsectState} updateColor={updateInsectColor} />
+          <ColorPicker state={InsectState} updateColor={updateInsectColor} modelName="Insect" />
         );
       case "Teapot":
         return (
-          <ColorPicker state={TeapotState} updateColor={updateTeapotColor} />
+          <ColorPicker state={TeapotState} updateColor={updateTeapotColor} modelName="Teapot" />
         );
       default:
         break;

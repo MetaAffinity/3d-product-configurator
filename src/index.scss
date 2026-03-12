@@ -29,9 +29,51 @@ code {
 .color-picker {
   position: absolute;
   top: 10%;
-  left: 10%;
+  left: 5%;
   z-index: 10;
   transition: opacity 0.3s;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  h1 {
+    font-size: 16px;
+    text-transform: capitalize;
+    margin: 0 0 12px 0;
+    color: #333;
+  }
+
+  .color-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 200px;
+
+    .swatch {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+      &:hover {
+        transform: scale(1.15);
+      }
+
+      &.active {
+        border-color: #333;
+        transform: scale(1.15);
+      }
+    }
+  }
+
+  .free-picker {
+    margin-top: 12px;
+  }
 }
 
 .model-selector {

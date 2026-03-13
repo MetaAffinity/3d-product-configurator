@@ -5,6 +5,7 @@ import Axe from "../Components/Axe";
 import Insect from "../Components/Insect";
 import Teapot from "../Components/Teapot";
 import Sneaker from "../Components/Sneaker";
+import PoloShirt from "../Components/PoloShirt";
 
 // ============================================================
 // MODEL CONFIGURATION
@@ -119,6 +120,19 @@ const modelConfig = {
       strap: [0, 1.0],
       inside: [1.8, 0.8],
       stitches: [0.5, 1.5],
+    },
+  },
+  PoloShirt: {
+    component: PoloShirt,
+    colors: {
+      body: "#ffffff",
+      buttons: "#cccccc",
+      sleeves: "#ffffff",
+    },
+    cameraAngles: {
+      body: [0, 1.2],
+      buttons: [0, 1.0],
+      sleeves: [0.8, 1.3],
     },
   },
 };

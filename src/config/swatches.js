@@ -47,6 +47,11 @@ export const productColors = {
     inside: ["#d3d3d3", "#ffffff", "#000000", "#f5e6ca", "#d4a373", "#b08968", "#2c3e50", "#808080"],
     stitches: ["#cccccc", "#ffffff", "#000000", "#ff0000", "#ffd700", "#0055ff", "#00cc44", "#808080"],
   },
+  PoloShirt: {
+    body: ["#ffffff", "#000000", "#1a1a2e", "#c0392b", "#2980b9", "#27ae60", "#f39c12", "#8e44ad"],
+    buttons: ["#cccccc", "#ffffff", "#000000", "#d4a373", "#c0392b", "#2980b9", "#f39c12", "#2c3e50"],
+    sleeves: ["#ffffff", "#000000", "#d3d3d3", "#1a1a2e", "#c0392b", "#2980b9", "#27ae60", "#8e44ad"],
+  },
 };
 
 export const defaultColors = ["#ffffff", "#000000", "#d3d3d3", "#a8a8a8", "#ff0000", "#0055ff", "#ffcc00", "#00cc44"];

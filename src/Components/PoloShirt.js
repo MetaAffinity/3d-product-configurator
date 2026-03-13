@@ -44,6 +44,7 @@ export default function PoloShirt({ colors, options, textures, updateCurrent }) 
       const idx = bodyPatterns.indexOf(selected);
       if (idx !== -1 && patternArray[idx]) {
         mats.body.map = patternArray[idx];
+        mats.body.color.set("#ffffff"); // neutral — prevent color tinting texture
         mats.body.map.needsUpdate = true;
         mats.body.needsUpdate = true;
       }

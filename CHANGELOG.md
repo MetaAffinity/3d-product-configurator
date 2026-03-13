@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [v1.2.2.2] - 2026-03-14
+
+### Added
+- **PoloShirt model (GLB)** — New polo shirt 3D model with 3 customizable parts: body, buttons, sleeves.
+- **Texture pattern swapping** — Body part supports swappable design patterns (PNG images). Patterns shown as thumbnails in the color picker when body is selected. First option restores plain color, remaining options apply the pattern texture.
+- **Pattern config** — `src/config/patterns.js` — add new patterns per model per part by just dropping images in `public/[model]/patterns/` and registering in config.
+- **Per-model initial camera position** — `cameraPosition` field in model config. When switching to a model, camera resets to its defined position for best initial view.
+- **Toggleable back strap for Sneaker** — Options section in the Parts Panel with a toggle switch to show/hide the back strap (and its stitches) on the Sneaker model.
+
+### Fixed
+- **Sneaker material independence** — Cloned all GLB materials so Strap and Top (which shared `materials.Top`) can now be colored independently.
+- **Sneaker material names** — Lowercased material names on cloned materials so clicking parts on the 3D model correctly maps to state keys.
+- **Per-model zoom** — `minDistance` is now per-model in config (default 1.5). Sneaker uses 0.5, all others keep 1.5. Prevents over-zooming on smaller models.
+- **PoloShirt multi-primitive mesh** — Fixed crash caused by accessing undefined node names (`cloth_shape_0008_1`) — Three.js does not create separate named nodes for GLTF multi-primitive meshes. Fixed by using direct node names from GLB.
+- **PoloShirt position and scale** — Adjusted outer group scale and position so shirt appears correctly in scene with shadow aligned.
+
+---
+
 ## [v1.2.2.1] - 2026-03-12
 
 ### Added
@@ -105,3 +123,4 @@ All notable changes to this project will be documented in this file.
 | `v1.2.1` | Predefined color swatches + toggleable free color picker |
 | `v1.2.2` | Toolbar: screenshot, auto-rotate, reset, zoom, fullscreen |
 | `v1.2.2.1` | Sneaker GLB model added with full config |
+| `v1.2.2.2` | PoloShirt model, texture patterns, back strap toggle, per-model camera/zoom |

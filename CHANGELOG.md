@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - **PoloShirt model (GLB)** — New polo shirt 3D model with 3 customizable parts: body, buttons, sleeves.
 - **Texture pattern swapping** — Body part supports swappable design patterns (PNG images). Patterns shown as thumbnails in the color picker when body is selected. First option restores plain color, remaining options apply the pattern texture.
-- **Pattern config** — `src/config/patterns.js` — add new patterns per model per part by just dropping images in `public/[model]/patterns/` and registering in config.
+- **Pattern config** — `src/config/patterns.js` — add new patterns per model per part by dropping images in `public/[model]/patterns/` and registering in config. Full step-by-step guide is written as comments inside `patterns.js`.
 - **Per-model initial camera position** — `cameraPosition` field in model config. When switching to a model, camera resets to its defined position for best initial view.
 - **Toggleable back strap for Sneaker** — Options section in the Parts Panel with a toggle switch to show/hide the back strap (and its stitches) on the Sneaker model.
 

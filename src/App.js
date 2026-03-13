@@ -72,7 +72,11 @@ function App() {
 
   // Model switching
   const handleModelChange = (model) => {
-    if (controls.current) controls.current.reset();
+    if (controls.current) {
+      controls.current.reset();
+      const camPos = modelConfig[model].cameraPosition;
+      if (camPos) controls.current.object.position.set(...camPos);
+    }
     setIsRotating(false);
     setSelectedModel(model);
   };

@@ -29,7 +29,7 @@ export default function PoloShirt({ colors, updateCurrent }) {
     <group
       dispose={null}
       scale={[0.35, 0.35, 0.35]}
-      position={[0, -0.5, 0]}
+      position={[0, -1.0, 0]}
       onPointerOver={(e) => { e.stopPropagation(); setHovered(e.object.material.name); }}
       onPointerOut={(e) => { if (e.intersections.length === 0) setHovered(null); }}
       onPointerDown={(e) => { e.stopPropagation(); updateCurrent(e.object.material.name); }}

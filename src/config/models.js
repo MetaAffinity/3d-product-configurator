@@ -1,4 +1,5 @@
 import { proxy } from "valtio";
+import { modelPatterns } from "./patterns";
 import Shoe from "../Components/Shoe";
 import Rocket from "../Components/Rocket";
 import Axe from "../Components/Axe";
@@ -146,10 +147,16 @@ Object.keys(modelConfig).forEach((name) => {
   Object.keys(opts).forEach((key) => {
     optionDefaults[key] = opts[key].default;
   });
+  // Generate default texture state — null means use original GLB texture
+  const partPatterns = modelPatterns[name] || {};
+  const textureDefaults = {};
+  Object.keys(partPatterns).forEach((part) => { textureDefaults[part] = null; });
+
   modelStates[name] = proxy({
     current: null,
     colors: { ...modelConfig[name].colors },
     options: optionDefaults,
+    textures: textureDefaults,
   });
 });
 

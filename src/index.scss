@@ -45,6 +45,44 @@ code {
     color: #333;
   }
 
+  .pattern-swatches {
+    margin-bottom: 12px;
+
+    .pattern-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      margin: 0 0 8px 0;
+    }
+
+    .pattern-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pattern-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 3px solid transparent;
+      object-fit: cover;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+      &:hover {
+        transform: scale(1.1);
+      }
+
+      &.active {
+        border-color: #333;
+        transform: scale(1.1);
+      }
+    }
+  }
+
   .color-swatches {
     display: flex;
     flex-wrap: wrap;

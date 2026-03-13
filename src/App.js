@@ -27,6 +27,10 @@ function App() {
     state.colors[prop] = value;
   }, [state]);
 
+  const updateTexture = useCallback((part, path) => {
+    state.textures[part] = path;
+  }, [state]);
+
   // Camera animation
   const animateCamera = useCallback((targetAzimuthal, targetPolar) => {
     if (!controls.current) return;
@@ -65,6 +69,7 @@ function App() {
         castShadow
         colors={state.colors}
         options={state.options}
+        textures={state.textures}
         updateCurrent={updateCurrent}
       />
     );
@@ -118,7 +123,7 @@ function App() {
   return (
     <>
       <ModelPicker updateSelectedModel={handleModelChange} />
-      <ColorPicker state={state} updateColor={updateColor} modelName={selectedModel} />
+      <ColorPicker state={state} updateColor={updateColor} updateTexture={updateTexture} modelName={selectedModel} />
       <PartsPicker state={state} updateCurrent={handlePartSelect} modelName={selectedModel} />
       <Toolbar
         onScreenshot={handleScreenshot}

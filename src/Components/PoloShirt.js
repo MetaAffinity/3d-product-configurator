@@ -2,30 +2,14 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useGLTF } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 
-export default function PoloShirt({ colors, options, updateCurrent }) {
-  const { scene, materials } = useGLTF("/poloshirt/poloshirt01.gltf", "/draco/");
+export default function PoloShirt({ colors, updateCurrent }) {
+  const { nodes, materials } = useGLTF("/poloshirt/poloshirt01.glb");
   const snap = useSnapshot(colors);
   const [hovered, setHovered] = useState(null);
 
-  // Multi-primitive meshes in Three.js don't get unique node names per primitive,
-  // so traverse the scene and extract geometries by material name instead.
-  const geoms = useMemo(() => {
-    const result = {};
-    scene.traverse((obj) => {
-      if (obj.isMesh && obj.material?.name) {
-        result[obj.material.name] = obj.geometry;
-      }
-    });
-    return result;
-  }, [scene]);
-
-  // Clone materials so each part can be colored independently
+  // Clone materials so each part colors independently
   const mats = useMemo(() => {
-    const clone = (mat, name) => {
-      const c = mat.clone();
-      c.name = name;
-      return c;
-    };
+    const clone = (mat, name) => { const c = mat.clone(); c.name = name; return c; };
     return {
       body: clone(materials["Main Design"], "body"),
       buttons: clone(materials["Button Colour"], "buttons"),
@@ -50,13 +34,13 @@ export default function PoloShirt({ colors, options, updateCurrent }) {
       onPointerDown={(e) => { e.stopPropagation(); updateCurrent(e.object.material.name); }}
       onPointerMissed={() => updateCurrent(null)}
     >
-      <group position={[0.084, -4.801, -0.214]} scale={0.006}>
-        <mesh castShadow material-color={snap.body} geometry={geoms["Main Design"]} material={mats.body} />
-        <mesh castShadow material-color={snap.buttons} geometry={geoms["Button Colour"]} material={mats.buttons} />
-        <mesh castShadow material-color={snap.sleeves} geometry={geoms["Sleeve End Colour"]} material={mats.sleeves} />
+      <group name="Polo" position={[0.084, -4.801, -0.214]} scale={0.006}>
+        <mesh castShadow material-color={snap.body} geometry={nodes.cloth_shape_0008.geometry} material={mats.body} />
+        <mesh castShadow material-color={snap.buttons} geometry={nodes.cloth_shape_0008_1.geometry} material={mats.buttons} />
+        <mesh castShadow material-color={snap.sleeves} geometry={nodes.cloth_shape_0008_2.geometry} material={mats.sleeves} />
       </group>
     </group>
   );
 }
 
-useGLTF.preload("/poloshirt/poloshirt01.gltf", "/draco/");
+useGLTF.preload("/poloshirt/poloshirt01.glb");

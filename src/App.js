@@ -1,6 +1,9 @@
 import React, { Suspense, useState, useRef, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Float } from "@react-three/drei";
+import { OrbitControls, Float, useGLTF } from "@react-three/drei";
+
+// Use local Draco decoder instead of Google CDN (avoids CDN failures)
+useGLTF.setDecoderPath("/draco/");
 import Loader from "./Components/Loader";
 import ModelPicker from "./Components/ModelPicker";
 import ColorPicker from "./Components/ColorPicker";

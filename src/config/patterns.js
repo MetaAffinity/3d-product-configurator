@@ -42,8 +42,8 @@ export const modelPatterns = {
     // src: full UV texture applied on model
     // thumb: small preview image shown in panel (optional — falls back to src)
     body: [
-      { src: "/poloshirt/patterns/design1.png", thumb: "/poloshirt/patterns/thumb1.png" },
-      { src: "/poloshirt/patterns/design2.png", thumb: "/poloshirt/patterns/thumb2.png" },
+      { src: "/poloshirt/patterns/design1.png", thumb: "/poloshirt/patterns/design1.jpg" },
+      { src: "/poloshirt/patterns/design2.png", thumb: "/poloshirt/patterns/design1.jpg" },
     ],
   },
 };

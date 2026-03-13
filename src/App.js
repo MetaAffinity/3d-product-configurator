@@ -1,9 +1,6 @@
 import React, { Suspense, useState, useRef, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Float, useGLTF } from "@react-three/drei";
-
-// Use local Draco decoder instead of Google CDN (avoids CDN failures)
-useGLTF.setDecoderPath("/draco/");
 import Loader from "./Components/Loader";
 import ModelPicker from "./Components/ModelPicker";
 import ColorPicker from "./Components/ColorPicker";
@@ -11,6 +8,9 @@ import PartsPicker from "./Components/PartsPicker";
 import Toolbar from "./Components/Toolbar";
 import { modelConfig, modelStates, defaultModel } from "./config/models";
 import { AiOutlineUser } from "react-icons/ai";
+
+// Use local Draco decoder instead of Google CDN (avoids CDN failures)
+useGLTF.setDecoderPath("/draco/");
 
 function App() {
   const [selectedModel, setSelectedModel] = useState(defaultModel);

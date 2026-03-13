@@ -9,16 +9,39 @@ All notable changes to this project will be documented in this file.
 ### Added
 - **PoloShirt model (GLB)** — New polo shirt 3D model with 3 customizable parts: body, buttons, sleeves.
 - **Texture pattern swapping** — Body part supports swappable design patterns (PNG images). Patterns shown as thumbnails in the color picker when body is selected. First option restores plain color, remaining options apply the pattern texture.
-- **Pattern config** — `src/config/patterns.js` — add new patterns per model per part by dropping images in `public/[model]/patterns/` and registering in config. Full step-by-step guide is written as comments inside `patterns.js`.
+- **Color swatches auto-hide** — When a pattern/design is active on a part, color swatches are automatically hidden (color + texture together doesn't make sense for design-mapped parts).
+- **Thumbnail support for patterns** — Each pattern entry in `patterns.js` now has `{ src, thumb }` format. `src` is the full UV texture applied on the model. `thumb` is an optional small preview image shown in the panel. If `thumb` is not provided, `src` is used as fallback.
+- **Pattern config** — `src/config/patterns.js` — full step-by-step guide written as comments inside the file.
 - **Per-model initial camera position** — `cameraPosition` field in model config. When switching to a model, camera resets to its defined position for best initial view.
 - **Toggleable back strap for Sneaker** — Options section in the Parts Panel with a toggle switch to show/hide the back strap (and its stitches) on the Sneaker model.
 
 ### Fixed
 - **Sneaker material independence** — Cloned all GLB materials so Strap and Top (which shared `materials.Top`) can now be colored independently.
 - **Sneaker material names** — Lowercased material names on cloned materials so clicking parts on the 3D model correctly maps to state keys.
-- **Per-model zoom** — `minDistance` is now per-model in config (default 1.5). Sneaker uses 0.5, all others keep 1.5. Prevents over-zooming on smaller models.
-- **PoloShirt multi-primitive mesh** — Fixed crash caused by accessing undefined node names (`cloth_shape_0008_1`) — Three.js does not create separate named nodes for GLTF multi-primitive meshes. Fixed by using direct node names from GLB.
+- **Per-model zoom** — `minDistance` is now per-model in config (default 1.5). Sneaker uses 0.5, all others keep 1.5.
+- **PoloShirt multi-primitive mesh crash** — Three.js does not create separate named nodes for GLTF multi-primitive meshes. Fixed by using direct node names from GLB.
 - **PoloShirt position and scale** — Adjusted outer group scale and position so shirt appears correctly in scene with shadow aligned.
+- **Pattern UV flip** — Set `flipY = false` on loaded pattern textures to match GLTF UV convention so designs align correctly (front/back/sleeves in correct position).
+
+### How to add patterns for a new model
+> Full guide is in `src/config/patterns.js` as comments. Summary:
+>
+> 1. Create folder: `public/[ModelName]/patterns/`
+> 2. Add UV texture image: `design1.png` (full UV layout exported from Blender)
+> 3. Add thumbnail image (optional): `thumb1.png` — small preview shown in the panel
+>    - Recommended: a rendered mockup or cropped front view of the shirt with that design
+>    - If not provided, the UV texture itself is used as thumbnail (fallback)
+>    - Thumbnail path goes in `patterns.js` as `thumb` field next to `src`
+> 4. Register in `src/config/patterns.js`:
+>    ```js
+>    ModelName: {
+>      partName: [
+>        { src: "/ModelName/patterns/design1.png", thumb: "/ModelName/patterns/thumb1.png" },
+>      ]
+>    }
+>    ```
+> 5. In the model component, add `useTexture` + `useEffect` (follow `PoloShirt.js` as reference)
+> 6. Done — ColorPicker UI shows thumbnails automatically when that part is selected
 
 ---
 

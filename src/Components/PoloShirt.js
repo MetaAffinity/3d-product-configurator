@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useGLTF, useTexture } from "@react-three/drei";
 import { useSnapshot } from "valtio";
+import { sRGBEncoding } from "three";
 import { modelPatterns } from "../config/patterns";
 
 const bodyPatternConfig = modelPatterns.PoloShirt?.body || [];
@@ -30,9 +31,11 @@ export default function PoloShirt({ colors, options, textures, updateCurrent }) 
   const patternArray = Array.isArray(patternTextures) ? patternTextures : [patternTextures];
 
   // GLTF models use flipY=false — match it so designs align correctly with UV map
+  // sRGBEncoding needed for color textures — default LinearEncoding causes washed-out look
   useMemo(() => {
     patternArray.forEach((tex) => {
       tex.flipY = false;
+      tex.encoding = sRGBEncoding;
       tex.needsUpdate = true;
     });
   }, [patternArray]);

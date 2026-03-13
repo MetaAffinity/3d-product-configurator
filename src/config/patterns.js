@@ -18,8 +18,8 @@
 //
 //    Sneaker: {
 //      front: [
-//        "/Sneaker/patterns/camo.png",
-//        "/Sneaker/patterns/carbon.png",
+//        { src: "/Sneaker/patterns/camo.png", thumb: "/Sneaker/patterns/camo_thumb.png" },
+//        { src: "/Sneaker/patterns/carbon.png" }, // thumb is optional, falls back to src
 //      ],
 //    },
 //
@@ -39,9 +39,11 @@
 
 export const modelPatterns = {
   PoloShirt: {
+    // src: full UV texture applied on model
+    // thumb: small preview image shown in panel (optional — falls back to src)
     body: [
-      "/poloshirt/patterns/design1.png",
-      "/poloshirt/patterns/design2.png",
+      { src: "/poloshirt/patterns/design1.png", thumb: "/poloshirt/patterns/thumb1.png" },
+      { src: "/poloshirt/patterns/design2.png", thumb: "/poloshirt/patterns/thumb2.png" },
     ],
   },
 };

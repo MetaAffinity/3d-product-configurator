@@ -3,7 +3,8 @@ import { useGLTF, useTexture } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { modelPatterns } from "../config/patterns";
 
-const bodyPatterns = modelPatterns.PoloShirt?.body || [];
+const bodyPatternConfig = modelPatterns.PoloShirt?.body || [];
+const bodyPatterns = bodyPatternConfig.map((p) => p.src);
 
 export default function PoloShirt({ colors, options, textures, updateCurrent }) {
   const { nodes, materials } = useGLTF("/poloshirt/poloshirt01.glb");

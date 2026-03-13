@@ -28,6 +28,14 @@ export default function PoloShirt({ colors, options, textures, updateCurrent }) 
   const patternTextures = useTexture(bodyPatterns.length > 0 ? bodyPatterns : ["/poloshirt/patterns/design1.png"]);
   const patternArray = Array.isArray(patternTextures) ? patternTextures : [patternTextures];
 
+  // GLTF models use flipY=false — match it so designs align correctly with UV map
+  useMemo(() => {
+    patternArray.forEach((tex) => {
+      tex.flipY = false;
+      tex.needsUpdate = true;
+    });
+  }, [patternArray]);
+
   // Apply selected pattern texture to body material
   useEffect(() => {
     const selected = texturesSnap.body;

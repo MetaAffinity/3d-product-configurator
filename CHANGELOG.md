@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [v1.2.2.3] - 2026-03-14
+
+### Fixed
+- **PoloShirt pattern whitening** — When a design pattern is applied to the body, `material-color` is now set to `#ffffff` (neutral white) instead of the user's chosen color. This prevents the body color from multiplying with and washing out the pattern texture. When no pattern is active, color works normally.
+
+---
+
 ## [v1.2.2.2] - 2026-03-14
 
 ### Added

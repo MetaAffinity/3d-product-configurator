@@ -124,7 +124,7 @@ const modelConfig = {
   },
   PoloShirt: {
     component: PoloShirt,
-    cameraPosition: [0, 0.3, 3],
+    cameraPosition: [0, 0.2, 2],
     colors: {
       body: "#ffffff",
       buttons: "#cccccc",

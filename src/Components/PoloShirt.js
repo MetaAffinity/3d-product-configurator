@@ -3,7 +3,7 @@ import { useGLTF } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 
 export default function PoloShirt({ colors, options, updateCurrent }) {
-  const { scene, materials } = useGLTF("/poloshirt/poloshirt01.gltf");
+  const { scene, materials } = useGLTF("/poloshirt/poloshirt01.gltf", "/draco/");
   const snap = useSnapshot(colors);
   const [hovered, setHovered] = useState(null);
 
@@ -59,4 +59,4 @@ export default function PoloShirt({ colors, options, updateCurrent }) {
   );
 }
 
-useGLTF.preload("/poloshirt/poloshirt01.gltf");
+useGLTF.preload("/poloshirt/poloshirt01.gltf", "/draco/");

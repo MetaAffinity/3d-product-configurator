@@ -4,13 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [v1.2.2.3] - 2026-03-14
-
-### Fixed
-- **PoloShirt pattern whitening** — When a design pattern is applied to the body, `material-color` is now set to `#ffffff` (neutral white) instead of the user's chosen color. This prevents the body color from multiplying with and washing out the pattern texture. When no pattern is active, color works normally.
-
----
-
 ## [v1.2.2.2] - 2026-03-14
 
 ### Added
@@ -29,6 +22,8 @@ All notable changes to this project will be documented in this file.
 - **PoloShirt multi-primitive mesh crash** — Three.js does not create separate named nodes for GLTF multi-primitive meshes. Fixed by using direct node names from GLB.
 - **PoloShirt position and scale** — Adjusted outer group scale and position so shirt appears correctly in scene with shadow aligned.
 - **Pattern UV flip** — Set `flipY = false` on loaded pattern textures to match GLTF UV convention so designs align correctly (front/back/sleeves in correct position).
+- **PoloShirt pattern whitening** — When a design pattern is applied to the body, `material-color` is now set to `#ffffff` (neutral white) instead of the user's chosen color. This prevents the body color from multiplying with and washing out the pattern texture. When no pattern is active, color works normally.
+- **PoloShirt GLB updated** — Removed base body texture map from the GLB material in Blender so plain color renders cleanly without any base texture interference.
 
 ### How to add patterns for a new model
 > Full guide is in `src/config/patterns.js` as comments. Summary:

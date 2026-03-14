@@ -257,12 +257,14 @@ function DecalItem({ overlay, cache }) {
       position={localPos.toArray()}
       rotation={localRotation}
       scale={[localScale, localScale, localScale * 1.5]}
+      renderOrder={2}
     >
       <meshStandardMaterial
         map={activeTexture}
         transparent
         alphaTest={0.01}
         depthWrite={false}
+        depthTest={false}
         roughness={0.85}
         metalness={0}
         polygonOffset

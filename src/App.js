@@ -1,6 +1,7 @@
 import React, { Suspense, useState, useRef, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Float } from "@react-three/drei";
+import { useSnapshot } from "valtio";
 import Loader from "./Components/Loader";
 import ModelPicker from "./Components/ModelPicker";
 import ColorPicker from "./Components/ColorPicker";
@@ -24,6 +25,8 @@ function App() {
   // Get current model's state and config
   const state = modelStates[selectedModel];
   const config = modelConfig[selectedModel];
+  // Subscribe to design changes so design prop stays reactive
+  const { design: activeDesign } = useSnapshot(state);
 
   const updateCurrent = useCallback((value) => {
     state.current = value;
@@ -77,7 +80,7 @@ function App() {
           colors={state.colors}
           options={state.options}
           textures={state.textures}
-          design={state.design}
+          design={activeDesign}
           designs={config.designs}
           updateCurrent={updateCurrent}
         />

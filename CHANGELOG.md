@@ -18,15 +18,15 @@ For full developer instructions (how to add models, patterns, options), see **[D
   - **Curved text** — Toggle to arch text along a curve; "Arch Up / Down" toggle to flip direction
 - **Placement presets** — Front / Back / Left / Right buttons per model (positions defined per model in `models.js` under `decalPositions`)
 - **Size slider** — Scale the logo/text overlay (0.04–0.35 world units)
-- **Offset X / Y sliders** — Fine-tune position on the model surface
-- **Reset Position** — Resets offset and size to defaults
+- **2D drag pad** — Replaced X/Y sliders with a click-and-drag position pad; drag anywhere inside the square to move the logo/text on the model surface
+- **Reset Position & Size** — Resets offset and size to defaults
 - **Per-model decal positions** — `decalPositions` field added to all models in `models.js`; fallback defaults used if not defined
 
 ### Technical
 - `src/config/logoTextState.js` — Valtio proxy for all logo/text state
 - `src/utils/createTextTexture.js` — Canvas-based text renderer (straight + curved arc)
-- `src/Components/LogoTextPanel.jsx` — UI panel component
-- `src/Components/LogoTextOverlay.jsx` — 3D plane overlay rendered inside Canvas
+- `src/Components/LogoTextPanel.jsx` — UI panel (repositioned to bottom-left, no longer overlaps 3D model)
+- `src/Components/LogoTextOverlay.jsx` — 3D overlay; placed inside Float group so it tracks model animation; uses `MeshStandardMaterial` (roughness 0.85) for realistic light-matched blending; per-frame raycasting aligns plane to surface normal
 - Google Fonts loaded in `public/index.html`
 
 ---

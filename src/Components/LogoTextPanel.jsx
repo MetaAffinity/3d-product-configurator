@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import { useSnapshot } from "valtio";
 import { logoTextState } from "../config/logoTextState";
 import { modelConfig } from "../config/models";
@@ -20,6 +20,35 @@ const PLACEMENTS = ["front", "back", "left", "right"];
 export default function LogoTextPanel({ modelName }) {
   const snap = useSnapshot(logoTextState);
   const fileRef = useRef();
+  const padRef = useRef();
+  const padDragging = useRef(false);
+
+  // 2D Position Pad — drag anywhere inside the square
+  const getPadOffset = useCallback((clientX, clientY) => {
+    const rect = padRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+    logoTextState.offsetX = (x - 0.5) * 6;
+    logoTextState.offsetY = -(y - 0.5) * 6;
+  }, []);
+
+  const handlePadDown = useCallback((e) => {
+    e.preventDefault();
+    padDragging.current = true;
+    getPadOffset(e.clientX, e.clientY);
+  }, [getPadOffset]);
+
+  useEffect(() => {
+    const onMove = (e) => { if (padDragging.current) getPadOffset(e.clientX, e.clientY); };
+    const onUp   = () => { padDragging.current = false; };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); };
+  }, [getPadOffset]);
+
+  // Dot position in pad (0–100%)
+  const dotX = Math.max(2, Math.min(98, (snap.offsetX / 6 + 0.5) * 100));
+  const dotY = Math.max(2, Math.min(98, (-snap.offsetY / 6 + 0.5) * 100));
   const config = modelConfig[modelName];
   const availablePlacements = config.decalPositions
     ? Object.keys(config.decalPositions)
@@ -185,6 +214,20 @@ export default function LogoTextPanel({ modelName }) {
         ))}
       </div>
 
+      {/* 2D Position Pad */}
+      <label className="logtext-label">Position — drag to move</label>
+      <div
+        ref={padRef}
+        className="logtext-pad"
+        onPointerDown={handlePadDown}
+      >
+        <div className="logtext-pad-hint">drag anywhere</div>
+        <div
+          className="logtext-pad-dot"
+          style={{ left: `${dotX}%`, top: `${dotY}%` }}
+        />
+      </div>
+
       <label className="logtext-label">Size</label>
       <input
         type="range" min="0.04" max="0.35" step="0.01"
@@ -193,32 +236,16 @@ export default function LogoTextPanel({ modelName }) {
         className="logtext-range"
       />
 
-      <label className="logtext-label">Offset X</label>
-      <input
-        type="range" min="-3" max="3" step="0.1"
-        value={snap.offsetX}
-        onChange={(e) => (logoTextState.offsetX = parseFloat(e.target.value))}
-        className="logtext-range"
-      />
-
-      <label className="logtext-label">Offset Y</label>
-      <input
-        type="range" min="-3" max="3" step="0.1"
-        value={snap.offsetY}
-        onChange={(e) => (logoTextState.offsetY = parseFloat(e.target.value))}
-        className="logtext-range"
-      />
-
       <button
         className="logtext-clear"
-        style={{ marginTop: 8 }}
+        style={{ marginTop: 4 }}
         onClick={() => {
           logoTextState.offsetX = 0;
           logoTextState.offsetY = 0;
           logoTextState.size = 0.12;
         }}
       >
-        Reset Position
+        Reset Position &amp; Size
       </button>
     </div>
   );

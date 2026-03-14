@@ -78,6 +78,7 @@ function App() {
           textures={state.textures}
           updateCurrent={updateCurrent}
         />
+        <LogoTextOverlay modelGroupRef={modelGroupRef} modelName={selectedModel} />
       </group>
     );
   };
@@ -162,7 +163,6 @@ function App() {
           <Float speed={1} rotationIntensity={1} floatIntensity={1} floatingRange={[0, 0.3]}>
             {renderModel()}
           </Float>
-          <LogoTextOverlay modelGroupRef={modelGroupRef} modelName={selectedModel} />
         </Suspense>
         <OrbitControls ref={controls} maxDistance={5} minDistance={config.minDistance || 1.5} autoRotate={isRotating} autoRotateSpeed={4} />
       </Canvas>

@@ -320,8 +320,7 @@ code {
 .logtext-toggle-btn {
   position: absolute;
   bottom: calc(5% + 64px);
-  left: 50%;
-  transform: translateX(-50%);
+  left: 5%;
   z-index: 10;
   display: flex;
   align-items: center;
@@ -353,9 +352,10 @@ code {
 .logtext-panel {
   position: absolute;
   bottom: calc(5% + 108px);
-  left: 50%;
-  transform: translateX(-50%);
+  left: 5%;
   z-index: 10;
+  max-height: 75vh;
+  overflow-y: auto;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
   border-radius: 14px;
@@ -524,6 +524,43 @@ code {
   .logtext-range {
     width: 100%;
     accent-color: #333;
+  }
+
+  // 2D position pad
+  .logtext-pad {
+    width: 100%;
+    height: 120px;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+    position: relative;
+    cursor: crosshair;
+    user-select: none;
+    touch-action: none;
+
+    &:active { background: rgba(0, 0, 0, 0.07); }
+  }
+
+  .logtext-pad-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.22);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .logtext-pad-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #333;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   }
 
   // Clear / reset button

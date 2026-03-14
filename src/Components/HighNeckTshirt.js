@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { useGLTF, useTexture } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import * as THREE from "three";
-import { modelPatterns } from "../config/patterns";
 
-// Mesh names from GLB → these are the 4 body panels
+// Mesh names from GLB (reference project) → 4 body panels
 const BODY_MESHES = [
   "Cloth_mesh_24", // front
   "Cloth_mesh_3",  // back
@@ -19,9 +18,6 @@ const PART_TO_MESH = {
   leftSleeve:  "Cloth_mesh_15",
 };
 
-const bodyPatternConfig = modelPatterns.HighNeckTshirt?.body || [];
-const bodyPatterns = bodyPatternConfig.map((p) => p.src);
-
 export default function HighNeckTshirt({ colors, options, textures, design, designs, updateCurrent }) {
   const { scene } = useGLTF("/highneck-tshirt/HighNeckTshirt.glb");
   const snap = useSnapshot(colors);
@@ -29,72 +25,83 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
   const [hovered, setHovered] = useState(null);
   const overlayRef = useRef([]);
 
+  // Helper: apply fn to all materials (handles array materials)
+  const forEachMaterial = (child, fn) => {
+    if (!child.material) return;
+    if (Array.isArray(child.material)) {
+      child.material.forEach(fn);
+    } else {
+      fn(child.material);
+    }
+  };
+
   // Clone scene with independent materials
   const clonedScene = useMemo(() => {
     const s = scene.clone(true);
     s.traverse((child) => {
-      if (child.isMesh && child.material) {
+      if (!child.isMesh) return;
+      child.castShadow = true;
+      if (Array.isArray(child.material)) {
+        child.material = child.material.map((m) => {
+          const c = m.clone();
+          c.name = "body";
+          return c;
+        });
+      } else if (child.material) {
         child.material = child.material.clone();
         child.material.name = "body";
-        child.castShadow = true;
       }
     });
     return s;
   }, [scene]);
 
-  // Store original material maps
-  const originalMaps = useRef({});
-  useMemo(() => {
-    clonedScene.traverse((child) => {
-      if (child.isMesh) {
-        originalMaps.current[child.name] = child.material.map;
-      }
-    });
-  }, [clonedScene]);
-
-  // Preload pattern textures
-  const patternTextures = useTexture(
-    bodyPatterns.length > 0 ? bodyPatterns : ["/highneck-tshirt/patterns/Brazilian.jpg"]
-  );
-  const patternArray = Array.isArray(patternTextures) ? patternTextures : [patternTextures];
-
-  useMemo(() => {
-    patternArray.forEach((tex) => {
-      tex.flipY = false;
-      tex.encoding = THREE.sRGBEncoding;
-      tex.needsUpdate = true;
-    });
-  }, [patternArray]);
-
   // Apply body color to all meshes
   useEffect(() => {
-    const isPatternActive = !!texturesSnap.body;
+    const color = texturesSnap.body ? "#ffffff" : snap.body;
     clonedScene.traverse((child) => {
-      if (child.isMesh && child.material) {
-        child.material.color.set(isPatternActive ? "#ffffff" : snap.body);
-        child.material.needsUpdate = true;
-      }
+      if (!child.isMesh) return;
+      forEachMaterial(child, (m) => {
+        if (m.color) {
+          m.color.set(color);
+          m.needsUpdate = true;
+        }
+      });
     });
   }, [snap.body, texturesSnap.body, clonedScene]);
 
   // Apply pattern texture to body meshes
   useEffect(() => {
     const selected = texturesSnap.body;
+    if (!selected) return;
+    const loader = new THREE.TextureLoader();
+    loader.load(selected, (tex) => {
+      tex.flipY = false;
+      tex.encoding = THREE.sRGBEncoding;
+      tex.needsUpdate = true;
+      clonedScene.traverse((child) => {
+        if (child.isMesh && BODY_MESHES.includes(child.name)) {
+          forEachMaterial(child, (m) => {
+            m.map = tex;
+            m.color.set("#ffffff");
+            m.needsUpdate = true;
+          });
+        }
+      });
+    });
+  }, [texturesSnap.body, clonedScene]);
+
+  // Clear pattern when deselected
+  useEffect(() => {
+    if (texturesSnap.body) return;
     clonedScene.traverse((child) => {
       if (child.isMesh && BODY_MESHES.includes(child.name)) {
-        if (selected) {
-          const idx = bodyPatterns.indexOf(selected);
-          if (idx !== -1 && patternArray[idx]) {
-            child.material.map = patternArray[idx];
-            child.material.color.set("#ffffff");
-          }
-        } else {
-          child.material.map = originalMaps.current[child.name] || null;
-        }
-        child.material.needsUpdate = true;
+        forEachMaterial(child, (m) => {
+          m.map = null;
+          m.needsUpdate = true;
+        });
       }
     });
-  }, [texturesSnap.body, clonedScene, patternArray]);
+  }, [texturesSnap.body, clonedScene]);
 
   // Apply design overlays
   useEffect(() => {
@@ -123,12 +130,14 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
           paths.forEach((texPath) => {
             if (!texPath) return;
             const geom = child.geometry.clone();
-            // Flip UV Y-axis to match texture orientation (same as reference project)
+            // Flip UV Y-axis to match texture orientation
             const uv = geom.attributes.uv;
-            for (let i = 0; i < uv.count; i++) {
-              uv.setY(i, uv.getY(i) * -1);
+            if (uv) {
+              for (let i = 0; i < uv.count; i++) {
+                uv.setY(i, uv.getY(i) * -1);
+              }
+              uv.needsUpdate = true;
             }
-            uv.needsUpdate = true;
 
             loader.load(texPath, (tex) => {
               tex.encoding = THREE.sRGBEncoding;
@@ -146,7 +155,7 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
         }
       });
     });
-  }, [design, clonedScene]);
+  }, [design, designs, clonedScene]);
 
   // Hover cursor
   useEffect(() => {
@@ -162,9 +171,9 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
       dispose={null}
       scale={[0.35, 0.35, 0.35]}
       position={[0, -1.0, 0]}
-      onPointerOver={(e) => { e.stopPropagation(); setHovered(e.object.material.name); }}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(e.object.material?.name || "body"); }}
       onPointerOut={(e) => { if (e.intersections.length === 0) setHovered(null); }}
-      onPointerDown={(e) => { e.stopPropagation(); updateCurrent(e.object.material.name); }}
+      onPointerDown={(e) => { e.stopPropagation(); updateCurrent(e.object.material?.name || "body"); }}
       onPointerMissed={() => updateCurrent(null)}
     >
       <primitive object={clonedScene} />

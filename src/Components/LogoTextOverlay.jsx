@@ -224,10 +224,9 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
     <Decal
       position={localPos.toArray()}
       rotation={localRotation}
-      // XY = visual size in local units; Z = stamp depth — 0.15× keeps box
-      // thin so it doesn't punch through to the back surface (no back-bleed),
-      // yet large enough to capture curved surface geometry.
-      scale={[localScale, localScale, localScale * 0.15]}
+      // XY = visual size in local units; Z = stamp depth — 1.5× captures
+      // curved surface geometry without punching through to the back face.
+      scale={[localScale, localScale, localScale * 1.5]}
     >
       <meshStandardMaterial
         map={activeTexture}

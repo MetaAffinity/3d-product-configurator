@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
+For full developer instructions (how to add models, patterns, options), see **[DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)**.
+
 ---
 
 ## [v1.2.2.2] - 2026-03-14

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import { useSnapshot } from "valtio";
-import { logoTextState } from "../config/logoTextState";
+import { logoTextState, placeItem, editItem, removeItem, cancelEditing } from "../config/logoTextState";
 import { modelConfig } from "../config/models";
 
 const FONTS = [
@@ -23,8 +23,7 @@ export default function LogoTextPanel({ modelName }) {
   const padRef = useRef();
   const padDragging = useRef(false);
 
-  // 2D Position Pad — drag anywhere inside the square
-  // Range ±12 so the full shirt height (collar → hem) is reachable
+  // 2D Position Pad
   const PAD_RANGE = 12;
   const ARROW_STEP = 0.4;
 
@@ -50,7 +49,6 @@ export default function LogoTextPanel({ modelName }) {
     return () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); };
   }, [getPadOffset]);
 
-  // Dot position in pad (0–100%)
   const dotX = Math.max(2, Math.min(98, (snap.offsetX / PAD_RANGE + 0.5) * 100));
   const dotY = Math.max(2, Math.min(98, (-snap.offsetY / PAD_RANGE + 0.5) * 100));
   const config = modelConfig[modelName];
@@ -58,24 +56,70 @@ export default function LogoTextPanel({ modelName }) {
     ? Object.entries(config.placements)
     : DEFAULT_PLACEMENTS;
 
-  // ── Handlers ───────────────────────────────────────────────────────
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    logoTextState.logo = url;
+    logoTextState.logo = URL.createObjectURL(file);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (!file || !file.type.startsWith("image/")) return;
-    const url = URL.createObjectURL(file);
-    logoTextState.logo = url;
+    logoTextState.logo = URL.createObjectURL(file);
+  };
+
+  const hasContent =
+    (snap.activeTab === "logo" && snap.logo) ||
+    (snap.activeTab === "text" && snap.text.trim());
+
+  const getPlacementLabel = (key) => {
+    const pc = config?.placements?.[key];
+    return pc?.label || key;
   };
 
   return (
     <div className="logtext-panel">
+      {/* ── Placed items list ─────────────────────────────────── */}
+      {snap.items.length > 0 && (
+        <div className="logtext-items">
+          <label className="logtext-label">Placed Items</label>
+          {snap.items.map((item) => (
+            <div
+              key={item.id}
+              className={`logtext-item ${snap.editingId === item.id ? "editing" : ""}`}
+              onClick={() => editItem(item.id)}
+            >
+              <div className="logtext-item-info">
+                <span className="logtext-item-type">
+                  {item.activeTab === "logo" ? "Logo" : "Text"}
+                </span>
+                <span className="logtext-item-detail">
+                  {item.activeTab === "text" ? item.text.slice(0, 15) : "Image"}
+                  {" — "}
+                  {getPlacementLabel(item.placement)}
+                </span>
+              </div>
+              <button
+                className="logtext-item-delete"
+                onClick={(e) => { e.stopPropagation(); removeItem(item.id); }}
+                title="Remove"
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+          <div className="logtext-divider" />
+        </div>
+      )}
+
+      {/* ── Editor header ─────────────────────────────────────── */}
+      {snap.editingId !== null && (
+        <div className="logtext-editing-badge">
+          Editing item — <button onClick={cancelEditing}>Cancel</button>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="logtext-tabs">
         <button
@@ -239,31 +283,31 @@ export default function LogoTextPanel({ modelName }) {
             className="logtext-arrow-btn"
             onClick={() => { logoTextState.offsetY = Math.min(PAD_RANGE / 2, snap.offsetY + ARROW_STEP); }}
             title="Up"
-          >▲</button>
+          >&#9650;</button>
         </div>
         <div className="logtext-arrows-row">
           <button
             className="logtext-arrow-btn"
             onClick={() => { logoTextState.offsetX = Math.max(-PAD_RANGE / 2, snap.offsetX - ARROW_STEP); }}
             title="Left"
-          >◀</button>
+          >&#9664;</button>
           <button
             className="logtext-arrow-btn logtext-arrow-center"
             onClick={() => { logoTextState.offsetX = 0; logoTextState.offsetY = 0; }}
             title="Center"
-          >·</button>
+          >&middot;</button>
           <button
             className="logtext-arrow-btn"
             onClick={() => { logoTextState.offsetX = Math.min(PAD_RANGE / 2, snap.offsetX + ARROW_STEP); }}
             title="Right"
-          >▶</button>
+          >&#9654;</button>
         </div>
         <div className="logtext-arrows-row">
           <button
             className="logtext-arrow-btn"
             onClick={() => { logoTextState.offsetY = Math.max(-PAD_RANGE / 2, snap.offsetY - ARROW_STEP); }}
             title="Down"
-          >▼</button>
+          >&#9660;</button>
         </div>
       </div>
 
@@ -275,13 +319,23 @@ export default function LogoTextPanel({ modelName }) {
         className="logtext-range"
       />
 
-      <label className="logtext-label">Rotation — {snap.rotation}°</label>
+      <label className="logtext-label">Rotation — {snap.rotation}&deg;</label>
       <input
         type="range" min="-180" max="180" step="1"
         value={snap.rotation}
         onChange={(e) => (logoTextState.rotation = parseFloat(e.target.value))}
         className="logtext-range"
       />
+
+      {/* Place / Save button */}
+      {hasContent && (
+        <button
+          className="logtext-place-btn"
+          onClick={placeItem}
+        >
+          {snap.editingId !== null ? "Save Changes" : "Place on Model"}
+        </button>
+      )}
 
       <button
         className="logtext-clear"

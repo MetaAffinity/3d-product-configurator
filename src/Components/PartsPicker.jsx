@@ -6,6 +6,7 @@ export default function PartsPicker({ state, updateCurrent, modelName }) {
   const snap = useSnapshot(state);
   const optionsConfig = modelConfig[modelName]?.options;
   const designsConfig = modelConfig[modelName]?.designs;
+  const DESIGN_COLORS = ["#000000", "#ffffff", "#c0392b", "#2980b9", "#27ae60", "#f39c12", "#8e44ad", "#e74c3c"];
   // Hide parts that have a toggle option and it's off
   const parts = Object.keys(snap.colors).filter(
     (part) => !optionsConfig?.[part] || snap.options[part]
@@ -29,6 +30,29 @@ export default function PartsPicker({ state, updateCurrent, modelName }) {
               </div>
             ))}
           </div>
+          {/* Design color picker — only show when non-Basic design selected */}
+          {snap.design > 0 && (
+            <div className="design-color-picker">
+              <label className="design-color-label">Design Color</label>
+              <div className="design-color-swatches">
+                {DESIGN_COLORS.map((color) => (
+                  <div
+                    key={color}
+                    className={`design-color-swatch ${snap.designColor === color ? "active" : ""}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => { state.designColor = color; }}
+                  />
+                ))}
+                <input
+                  type="color"
+                  value={snap.designColor || "#000000"}
+                  onChange={(e) => { state.designColor = e.target.value; }}
+                  className="design-color-custom"
+                  title="Custom color"
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 

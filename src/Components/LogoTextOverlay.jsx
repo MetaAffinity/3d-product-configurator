@@ -17,29 +17,17 @@ const FACE_DIR = {
 };
 
 /**
- * Surface-conforming logo/text overlay.
- *
- * Strategy:
- *  1. One-time setup (400 ms after mount): raycast per placement to find the
- *     actual surface hit mesh + hit point. Convert everything to HIT MESH
- *     LOCAL SPACE — this is Float-immune because Float is a pure translation
- *     and worldToLocal cancels it.
- *  2. Use R3F createPortal to render drei's <Decal> directly INSIDE the hit
- *     mesh's Three.js object. The <Decal> component reads its parent mesh from
- *     the Three.js hierarchy and bakes DecalGeometry onto its surface.
- *     Because <Decal> is a child of the hit mesh, it floats with the model
- *     automatically — no per-frame tracking needed.
- *  3. The 2D pad offsetX/Y slides localPos along the surface tangent/bitangent
- *     (computed in mesh local space), keeping movement on-surface.
- *  4. scale = snap.size / meshWorldScale so the world-unit size slider maps
- *     correctly to the mesh's local coordinate system.
+ * Multi-overlay logo/text renderer.
+ * Renders all placed items from logoTextState.items + a live preview of the
+ * current editor content. Each item is portaled as a <Decal> into the
+ * surface mesh found via raycast.
  */
 export default function LogoTextOverlay({ modelGroupRef, modelName }) {
   const snap = useSnapshot(logoTextState);
 
   // Per-placement cache built after model loads
   const setupCache = useRef({});
-  const [cacheReady, setCacheReady] = useState(0); // bump to force re-render
+  const [cacheReady, setCacheReady] = useState(0);
 
   // ── One-time setup ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -79,7 +67,6 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
         const margin = Math.max(wSize.x, wSize.y, wSize.z) * 0.5 + 0.3;
         const rayY = worldBox.min.y + wSize.y * (pc.rayHeight ?? 0.5);
 
-        // Position ray origin outside the bbox on the correct face
         switch (pc.dir) {
           case "front":  origin.z = worldBox.max.z + margin; origin.y = rayY; break;
           case "back":   origin.z = worldBox.min.z - margin; origin.y = rayY; break;
@@ -102,7 +89,6 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
             .transformDirection(hitMesh.matrixWorld).normalize();
           worldHit    = hit.point.clone().addScaledVector(worldNormal, 0.002);
         } else {
-          // Fallback: largest mesh + bbox face centre
           hitMesh = meshes.reduce((a, b) =>
             (a.geometry?.attributes?.position?.count || 0) >=
             (b.geometry?.attributes?.position?.count || 0) ? a : b
@@ -120,11 +106,9 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
           }
         }
 
-        // Convert to hit mesh LOCAL space (Float-immune)
         const matInv    = hitMesh.matrixWorld.clone().invert();
         const localPos  = hitMesh.worldToLocal(worldHit.clone());
 
-        // Tangent/bitangent in mesh local space for pad offset
         const worldUp   = new THREE.Vector3(0, 1, 0);
         let wTangent    = new THREE.Vector3().crossVectors(worldUp, worldNormal);
         if (wTangent.lengthSq() < 0.001)
@@ -136,7 +120,6 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
         const localTangent   = wTangent.clone().transformDirection(matInv).normalize();
         const localBitangent = wBitangent.clone().transformDirection(matInv).normalize();
 
-        // Decal rotation in mesh local space — orient stamp box along surface normal
         const localNormal = worldNormal.clone().transformDirection(matInv).normalize();
         const quat = new THREE.Quaternion().setFromUnitVectors(
           new THREE.Vector3(0, 0, 1),
@@ -144,12 +127,10 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
         );
         const localRotation = new THREE.Euler().setFromQuaternion(quat);
 
-        // Mesh world scale — needed to convert snap.size (world units) → local units
         const meshWorldScale = new THREE.Vector3();
         hitMesh.getWorldScale(meshWorldScale);
         const avgScale = (meshWorldScale.x + meshWorldScale.y + meshWorldScale.z) / 3;
 
-        // Adaptive pad step in mesh local space units
         const stepH = (pc.dir === "left" || pc.dir === "right")
           ? (wSize.z / avgScale) * 0.1
           : (wSize.x / avgScale) * 0.1;
@@ -169,14 +150,60 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
     return () => clearTimeout(t);
   }, [modelGroupRef, modelName]);
 
-  // ── Text texture ─────────────────────────────────────────────────────────
+  if (!cacheReady) return null;
+
+  // Build list of overlays to render:
+  // - All placed items (using saved values, or editor values if being edited)
+  // - Live preview if creating new item with content
+  const overlays = [];
+
+  snap.items.forEach((item) => {
+    if (item.id === snap.editingId) {
+      // Render with current editor values for live editing
+      overlays.push({ ...snap, _key: `item-${item.id}` });
+    } else {
+      overlays.push({ ...item, _key: `item-${item.id}` });
+    }
+  });
+
+  // Live preview for new item (only when not editing existing)
+  if (snap.editingId === null) {
+    const hasPreviewContent =
+      (snap.activeTab === "logo" && snap.logo) ||
+      (snap.activeTab === "text" && snap.text.trim());
+    if (hasPreviewContent) {
+      overlays.push({ ...snap, _key: "preview" });
+    }
+  }
+
+  return (
+    <>
+      {overlays.map((overlay) => (
+        <DecalItem
+          key={overlay._key}
+          overlay={overlay}
+          cache={setupCache.current}
+        />
+      ))}
+    </>
+  );
+}
+
+/**
+ * Renders a single Decal for one overlay item.
+ */
+function DecalItem({ overlay, cache }) {
+  const entry = cache[overlay.placement];
+
+  // ── Text texture ──────────────────────────────────────────────────────
   const textCanvas = useMemo(() => {
-    if (!snap.text.trim()) return null;
+    if (overlay.activeTab !== "text" || !overlay.text?.trim()) return null;
     return createTextTexture({
-      text: snap.text, font: snap.font, textColor: snap.textColor,
-      bold: snap.bold, curved: snap.curved, curveUp: snap.curveUp,
+      text: overlay.text, font: overlay.font, textColor: overlay.textColor,
+      bold: overlay.bold, curved: overlay.curved, curveUp: overlay.curveUp,
     });
-  }, [snap.text, snap.font, snap.textColor, snap.bold, snap.curved, snap.curveUp]);
+  }, [overlay.activeTab, overlay.text, overlay.font, overlay.textColor,
+      overlay.bold, overlay.curved, overlay.curveUp]);
 
   const textTexture = useMemo(() => {
     if (!textCanvas) return null;
@@ -185,63 +212,50 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
     return tex;
   }, [textCanvas]);
 
-  // ── Logo texture ──────────────────────────────────────────────────────────
+  // ── Logo texture ──────────────────────────────────────────────────────
   const [logoTexture, setLogoTexture] = useState(null);
+  const logoSrc = overlay.activeTab === "logo" ? overlay.logo : null;
   useEffect(() => {
-    if (!snap.logo) { setLogoTexture(null); return; }
-    new THREE.TextureLoader().load(snap.logo, (tex) => {
+    if (!logoSrc) { setLogoTexture(null); return; }
+    new THREE.TextureLoader().load(logoSrc, (tex) => {
       tex.needsUpdate = true;
       setLogoTexture(tex);
     });
-  }, [snap.logo]);
+  }, [logoSrc]);
 
-  const activeTexture = snap.activeTab === "logo" ? logoTexture : textTexture;
+  const activeTexture = overlay.activeTab === "logo" ? logoTexture : textTexture;
 
-  // ── Current placement data ───────────────────────────────────────────────
-  const entry = setupCache.current[snap.placement];
-
-  // Local-space position with 2D pad offset applied
+  // ── Position / scale / rotation ───────────────────────────────────────
   const localPos = useMemo(() => {
     if (!entry) return null;
     return entry.localPos.clone()
-      .addScaledVector(entry.localTangent,   snap.offsetX * entry.stepH)
-      .addScaledVector(entry.localBitangent, snap.offsetY * entry.stepV);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entry, snap.offsetX, snap.offsetY, cacheReady]);
+      .addScaledVector(entry.localTangent,   overlay.offsetX * entry.stepH)
+      .addScaledVector(entry.localBitangent, overlay.offsetY * entry.stepV);
+  }, [entry, overlay.offsetX, overlay.offsetY]);
 
-  // Local-space scale (snap.size is in world units; convert to mesh local units)
   const localScale = useMemo(() => {
     if (!entry) return 0.1;
-    return snap.size / entry.avgScale;
-  }, [entry, snap.size]);
+    return overlay.size / entry.avgScale;
+  }, [entry, overlay.size]);
 
-  // Rotation around surface normal — combines base orientation with user rotation
   const localRotation = useMemo(() => {
     if (!entry) return new THREE.Euler();
     const baseQuat = new THREE.Quaternion().setFromEuler(entry.localRotation);
-    // Compute local normal from localRotation (Z axis of the base quaternion)
     const localNormal = new THREE.Vector3(0, 0, 1).applyQuaternion(baseQuat).normalize();
     const userQuat = new THREE.Quaternion().setFromAxisAngle(
       localNormal,
-      (snap.rotation * Math.PI) / 180
+      (overlay.rotation * Math.PI) / 180
     );
     const combined = userQuat.multiply(baseQuat);
     return new THREE.Euler().setFromQuaternion(combined);
-  }, [entry, snap.rotation]);
+  }, [entry, overlay.rotation]);
 
   if (!activeTexture || !entry || !localPos) return null;
 
-  // Portal the <Decal> INTO the hit mesh.
-  // createPortal renders the element as a child of entry.hitMesh in the
-  // Three.js scene graph. <Decal> from drei uses its parent mesh to build
-  // DecalGeometry — so the decal bakes perfectly onto that mesh's surface.
-  // Since <Decal> is a child of the hit mesh, it moves with Float for free.
   return createPortal(
     <Decal
       position={localPos.toArray()}
       rotation={localRotation}
-      // XY = visual size in local units; Z = stamp depth — 1.5× captures
-      // curved surface geometry without punching through to the back face.
       scale={[localScale, localScale, localScale * 1.5]}
     >
       <meshStandardMaterial

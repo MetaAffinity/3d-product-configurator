@@ -18,7 +18,7 @@ const PART_TO_MESH = {
   leftSleeve:  "Cloth_mesh_15",
 };
 
-export default function HighNeckTshirt({ colors, options, textures, design, designs, updateCurrent }) {
+export default function HighNeckTshirt({ colors, options, textures, design, designs, designColor, updateCurrent }) {
   const { scene } = useGLTF("/highneck-tshirt/HighNeckTshirt.glb");
   const snap = useSnapshot(colors);
   const texturesSnap = useSnapshot(textures);
@@ -168,6 +168,17 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
       });
     });
   }, [design, designs, clonedScene]);
+
+  // Update design overlay color when designColor changes
+  useEffect(() => {
+    if (!designColor) return;
+    overlayRef.current.forEach((overlay) => {
+      if (overlay.material) {
+        overlay.material.color.set(designColor);
+        overlay.material.needsUpdate = true;
+      }
+    });
+  }, [designColor]);
 
   // Hover cursor
   useEffect(() => {

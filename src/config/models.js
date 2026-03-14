@@ -182,7 +182,7 @@ const modelConfig = {
       rightSleeve: { label: "Right Sleeve", dir: "right", rayHeight: 0.5 },
     },
     colors: {
-      body: "#e8e8e8",
+      body: "#d0d0d0",
     },
     cameraAngles: {
       body: [0, 1.2],
@@ -243,6 +243,7 @@ Object.keys(modelConfig).forEach((name) => {
     options: optionDefaults,
     textures: textureDefaults,
     design: modelConfig[name].designs ? 0 : null,
+    designColor: modelConfig[name].designs ? "#000000" : null,
   });
 });
 

@@ -26,7 +26,7 @@ function App() {
   const state = modelStates[selectedModel];
   const config = modelConfig[selectedModel];
   // Subscribe to design changes so design prop stays reactive
-  const { design: activeDesign } = useSnapshot(state);
+  const { design: activeDesign, designColor: activeDesignColor } = useSnapshot(state);
 
   const updateCurrent = useCallback((value) => {
     state.current = value;
@@ -82,6 +82,7 @@ function App() {
           textures={state.textures}
           design={activeDesign}
           designs={config.designs}
+          designColor={activeDesignColor}
           updateCurrent={updateCurrent}
         />
         <LogoTextOverlay modelGroupRef={modelGroupRef} modelName={selectedModel} />

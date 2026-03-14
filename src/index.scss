@@ -315,3 +315,230 @@ code {
     }
   }
 }
+
+// ── Logo / Text toggle button (floating above toolbar) ───────────────
+.logtext-toggle-btn {
+  position: absolute;
+  bottom: calc(5% + 64px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  font-family: inherit;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.95);
+    color: #222;
+  }
+
+  &.active {
+    background: #333;
+    color: #fff;
+  }
+}
+
+// ── Logo / Text panel ─────────────────────────────────────────────────
+.logtext-panel {
+  position: absolute;
+  bottom: calc(5% + 108px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-radius: 14px;
+  padding: 16px;
+  width: 280px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.14);
+
+  .logtext-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+
+    button {
+      flex: 1;
+      padding: 7px 0;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      background: rgba(0, 0, 0, 0.06);
+      color: #555;
+      transition: all 0.2s;
+
+      &:hover { background: rgba(0, 0, 0, 0.1); }
+      &.active { background: #333; color: #fff; }
+    }
+  }
+
+  .logtext-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .logtext-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin: 4px 0 0 0;
+  }
+
+  .logtext-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logtext-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 10px 0;
+  }
+
+  // Logo dropzone
+  .logo-dropzone {
+    border: 2px dashed rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    transition: all 0.2s;
+    overflow: hidden;
+
+    &:hover { border-color: #666; color: #555; }
+
+    &.has-logo {
+      border-style: solid;
+      border-color: #ccc;
+    }
+  }
+
+  .logo-preview {
+    max-width: 100%;
+    max-height: 86px;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+
+  // Text input
+  .logtext-textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+
+    &:focus { border-color: #555; }
+  }
+
+  // Font selector
+  .logtext-select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+  }
+
+  // Color input
+  .logtext-color {
+    width: 36px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  // Toggle rows (bold, curved, archUp)
+  .logtext-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .logtext-toggle-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #444;
+    cursor: pointer;
+  }
+
+  // Placement buttons
+  .logtext-placements {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+
+    button {
+      flex: 1;
+      padding: 6px 4px;
+      border: 1.5px solid rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: inherit;
+      background: transparent;
+      color: #555;
+      cursor: pointer;
+      text-transform: capitalize;
+      transition: all 0.2s;
+
+      &:hover { background: rgba(0, 0, 0, 0.06); }
+      &.active { background: #333; color: #fff; border-color: #333; }
+    }
+  }
+
+  // Range sliders
+  .logtext-range {
+    width: 100%;
+    accent-color: #333;
+  }
+
+  // Clear / reset button
+  .logtext-clear {
+    width: 100%;
+    padding: 7px;
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    background: transparent;
+    font-size: 12px;
+    font-family: inherit;
+    color: #c0392b;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover { background: #fff0f0; border-color: #c0392b; }
+  }
+}

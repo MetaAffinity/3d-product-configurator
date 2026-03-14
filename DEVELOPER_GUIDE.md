@@ -414,6 +414,57 @@ cameraAngles: {
 
 ---
 
+## Logo / Text Overlay
+
+The Logo/Text feature places a flat plane with the user's logo or text in front of the 3D model.
+
+### Per-model placement positions
+
+Add `decalPositions` to any model in `models.js` to define where the overlay appears for each placement preset:
+
+```js
+MyModel: {
+  decalPositions: {
+    front: { position: [0, 0.05, 0.10], rotation: [0, 0, 0] },
+    back:  { position: [0, 0.05, -0.10], rotation: [0, Math.PI, 0] },
+    left:  { position: [-0.10, 0.05, 0], rotation: [0, -Math.PI / 2, 0] },
+    right: { position: [0.10, 0.05, 0],  rotation: [0, Math.PI / 2, 0] },
+  },
+}
+```
+
+- Positions are in **world space** (scene units)
+- You only need to define the presets you want — e.g. just `front` and `back`
+- If `decalPositions` is omitted entirely, the overlay still works using built-in fallback positions
+- The user can fine-tune position with Offset X / Y sliders and Size slider in the panel
+
+### Adding new fonts
+
+Fonts are defined in `src/Components/LogoTextPanel.jsx` in the `FONTS` array:
+```js
+const FONTS = [
+  { label: "My Font", value: "My Font" },
+  // ...
+];
+```
+
+The font must be loaded in the browser before canvas can use it. Add Google Font links to `public/index.html`:
+```html
+<link href="https://fonts.googleapis.com/css2?family=My+Font&display=swap" rel="stylesheet" />
+```
+
+### Key files
+
+| File | Purpose |
+|------|---------|
+| `src/config/logoTextState.js` | Valtio proxy — all logo/text state |
+| `src/utils/createTextTexture.js` | Canvas text renderer (straight + curved) |
+| `src/Components/LogoTextPanel.jsx` | UI panel |
+| `src/Components/LogoTextOverlay.jsx` | 3D plane mesh rendered in Canvas |
+| `public/index.html` | Google Fonts `<link>` tags |
+
+---
+
 ## File Reference
 
 | File | Purpose | Edit when |
@@ -425,5 +476,10 @@ cameraAngles: {
 | `src/Components/[Model].js` | 3D mesh + material logic | New model, pattern support, toggle parts |
 | `src/img/` | Thumbnail images for model picker | Adding model thumbnail |
 | `public/[model]/` | GLB file + pattern images | Updating the 3D model or designs |
+| `src/config/logoTextState.js` | Logo/text overlay state | Changing logo/text state fields |
+| `src/utils/createTextTexture.js` | Canvas text renderer | Changing text rendering logic |
+| `src/Components/LogoTextPanel.jsx` | Logo/text UI panel | Adding fonts, UI controls |
+| `src/Components/LogoTextOverlay.jsx` | 3D overlay plane | Changing how overlay renders |
+| `public/index.html` | Google Fonts links | Adding new fonts |
 | `CHANGELOG.md` | Change history | Every commit that changes functionality |
 | `DEVELOPER_GUIDE.md` | This file | When workflow or architecture changes |

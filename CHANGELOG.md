@@ -6,6 +6,31 @@ For full developer instructions (how to add models, patterns, options), see **[D
 
 ---
 
+## [v1.2.3] - 2026-03-14
+
+### Added
+- **Logo / Text Placement** — New floating panel (toggle via "Logo / Text" button above toolbar) that lets users overlay a logo or custom text on the 3D model.
+- **Logo Upload** — Drag & drop or click-to-upload any image (PNG/JPG/SVG). Preview shown in panel. Remove button to clear.
+- **Text Editor** — Type any text with the following options:
+  - **Font selection** — 9 fonts: Arial, Georgia, Impact, Courier New, Bebas Neue, Oswald, Pacifico, Playfair Display, Anton (Google Fonts loaded via CDN)
+  - **Text color** — Color picker
+  - **Bold toggle**
+  - **Curved text** — Toggle to arch text along a curve; "Arch Up / Down" toggle to flip direction
+- **Placement presets** — Front / Back / Left / Right buttons per model (positions defined per model in `models.js` under `decalPositions`)
+- **Size slider** — Scale the logo/text overlay (0.04–0.35 world units)
+- **Offset X / Y sliders** — Fine-tune position on the model surface
+- **Reset Position** — Resets offset and size to defaults
+- **Per-model decal positions** — `decalPositions` field added to all models in `models.js`; fallback defaults used if not defined
+
+### Technical
+- `src/config/logoTextState.js` — Valtio proxy for all logo/text state
+- `src/utils/createTextTexture.js` — Canvas-based text renderer (straight + curved arc)
+- `src/Components/LogoTextPanel.jsx` — UI panel component
+- `src/Components/LogoTextOverlay.jsx` — 3D plane overlay rendered inside Canvas
+- Google Fonts loaded in `public/index.html`
+
+---
+
 ## [v1.2.2.2] - 2026-03-14
 
 ### Added

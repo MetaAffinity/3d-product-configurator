@@ -6,13 +6,17 @@ import ModelPicker from "./Components/ModelPicker";
 import ColorPicker from "./Components/ColorPicker";
 import PartsPicker from "./Components/PartsPicker";
 import Toolbar from "./Components/Toolbar";
+import LogoTextPanel from "./Components/LogoTextPanel";
+import LogoTextOverlay from "./Components/LogoTextOverlay";
 import { modelConfig, modelStates, defaultModel } from "./config/models";
 import { AiOutlineUser } from "react-icons/ai";
+import { MdTextFields } from "react-icons/md";
 
 function App() {
   const [selectedModel, setSelectedModel] = useState(defaultModel);
   const [isRotating, setIsRotating] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showLogoText, setShowLogoText] = useState(false);
   const controls = useRef();
 
   // Get current model's state and config
@@ -125,6 +129,7 @@ function App() {
       <ModelPicker updateSelectedModel={handleModelChange} />
       <ColorPicker state={state} updateColor={updateColor} updateTexture={updateTexture} modelName={selectedModel} />
       <PartsPicker state={state} updateCurrent={handlePartSelect} modelName={selectedModel} />
+      {showLogoText && <LogoTextPanel modelName={selectedModel} />}
       <Toolbar
         onScreenshot={handleScreenshot}
         onToggleRotate={() => setIsRotating((prev) => !prev)}
@@ -135,6 +140,14 @@ function App() {
         onZoomIn={() => handleZoom("in")}
         onZoomOut={() => handleZoom("out")}
       />
+      <button
+        className={`logtext-toggle-btn ${showLogoText ? "active" : ""}`}
+        onClick={() => setShowLogoText((p) => !p)}
+        title="Logo / Text"
+      >
+        <MdTextFields size={18} />
+        <span>Logo / Text</span>
+      </button>
       <Canvas shadows camera={{ position: [1, 0, 2] }} gl={{ preserveDrawingBuffer: true }}>
         <ambientLight />
         <spotLight intensity={0.5} penumbra={1} position={[7, 15, 10]} castShadow />
@@ -145,6 +158,7 @@ function App() {
         <Suspense fallback={<Loader />}>
           <Float speed={1} rotationIntensity={1} floatIntensity={1} floatingRange={[0, 0.3]}>
             {renderModel()}
+            <LogoTextOverlay modelName={selectedModel} />
           </Float>
         </Suspense>
         <OrbitControls ref={controls} maxDistance={5} minDistance={config.minDistance || 1.5} autoRotate={isRotating} autoRotateSpeed={4} />

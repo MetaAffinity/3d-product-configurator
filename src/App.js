@@ -78,6 +78,7 @@ function App() {
           options={state.options}
           textures={state.textures}
           design={state.design}
+          designs={config.designs}
           updateCurrent={updateCurrent}
         />
         <LogoTextOverlay modelGroupRef={modelGroupRef} modelName={selectedModel} />

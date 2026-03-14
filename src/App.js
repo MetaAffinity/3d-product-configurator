@@ -9,6 +9,7 @@ import Toolbar from "./Components/Toolbar";
 import LogoTextPanel from "./Components/LogoTextPanel";
 import LogoTextOverlay from "./Components/LogoTextOverlay";
 import { modelConfig, modelStates, defaultModel } from "./config/models";
+import { switchLogoTextModel } from "./config/logoTextState";
 import { AiOutlineUser } from "react-icons/ai";
 import { MdTextFields } from "react-icons/md";
 
@@ -85,6 +86,7 @@ function App() {
 
   // Model switching
   const handleModelChange = (model) => {
+    switchLogoTextModel(model);
     if (controls.current) {
       controls.current.reset();
       const camPos = modelConfig[model].cameraPosition;

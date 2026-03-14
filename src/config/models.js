@@ -17,11 +17,11 @@ import PoloShirt from "../Components/PoloShirt";
 const modelConfig = {
   Shoe: {
     component: Shoe,
-    decalPositions: {
-      front: { position: [0, 0.04, 0.14], rotation: [0, 0, 0] },
-      back:  { position: [0, 0.04, -0.14], rotation: [0, Math.PI, 0] },
-      left:  { position: [-0.12, 0.04, 0], rotation: [0, -Math.PI / 2, 0] },
-      right: { position: [0.12, 0.04, 0],  rotation: [0, Math.PI / 2, 0] },
+    placements: {
+      front: { label: "Front", dir: "front", rayHeight: 0.35 },
+      back:  { label: "Back",  dir: "back",  rayHeight: 0.35 },
+      left:  { label: "Left",  dir: "left",  rayHeight: 0.5 },
+      right: { label: "Right", dir: "right", rayHeight: 0.5 },
     },
     colors: {
       laces: "#d3d3d3",
@@ -47,9 +47,9 @@ const modelConfig = {
   },
   Rocket: {
     component: Rocket,
-    decalPositions: {
-      front: { position: [0, 0.3, 0.06], rotation: [0, 0, 0] },
-      back:  { position: [0, 0.3, -0.06], rotation: [0, Math.PI, 0] },
+    placements: {
+      hullFront: { label: "Hull Front", dir: "front", rayHeight: 0.5 },
+      hullBack:  { label: "Hull Back",  dir: "back",  rayHeight: 0.5 },
     },
     colors: {
       hull: "#d3d3d3",
@@ -68,9 +68,9 @@ const modelConfig = {
   },
   Axe: {
     component: Axe,
-    decalPositions: {
-      front: { position: [0, 0.05, 0.10], rotation: [0, 0, 0] },
-      back:  { position: [0, 0.05, -0.10], rotation: [0, Math.PI, 0] },
+    placements: {
+      blade:  { label: "Blade",  dir: "front", rayHeight: 0.7 },
+      handle: { label: "Handle", dir: "front", rayHeight: 0.2 },
     },
     colors: {
       body: "#a8a8a8",
@@ -87,9 +87,9 @@ const modelConfig = {
   },
   Insect: {
     component: Insect,
-    decalPositions: {
-      front: { position: [0, 0.08, 0.10], rotation: [0, 0, 0] },
-      back:  { position: [0, 0.08, -0.10], rotation: [0, Math.PI, 0] },
+    placements: {
+      shell: { label: "Shell", dir: "top",   rayHeight: 0.9 },
+      body:  { label: "Body",  dir: "front", rayHeight: 0.35 },
     },
     colors: {
       body: "#d3d3d3",
@@ -102,9 +102,9 @@ const modelConfig = {
   },
   Teapot: {
     component: Teapot,
-    decalPositions: {
-      front: { position: [0, 0.1, 0.14], rotation: [0, 0, 0] },
-      back:  { position: [0, 0.1, -0.14], rotation: [0, Math.PI, 0] },
+    placements: {
+      body: { label: "Body", dir: "front", rayHeight: 0.35 },
+      lid:  { label: "Lid",  dir: "top",   rayHeight: 1.0 },
     },
     colors: {
       lid: "#d3d3d3",
@@ -118,11 +118,11 @@ const modelConfig = {
   Sneaker: {
     component: Sneaker,
     minDistance: 0.5,
-    decalPositions: {
-      front: { position: [0, 0.04, 0.10], rotation: [0, 0, 0] },
-      back:  { position: [0, 0.04, -0.10], rotation: [0, Math.PI, 0] },
-      left:  { position: [-0.10, 0.04, 0], rotation: [0, -Math.PI / 2, 0] },
-      right: { position: [0.10, 0.04, 0],  rotation: [0, Math.PI / 2, 0] },
+    placements: {
+      front: { label: "Front", dir: "front", rayHeight: 0.35 },
+      back:  { label: "Back",  dir: "back",  rayHeight: 0.35 },
+      left:  { label: "Left",  dir: "left",  rayHeight: 0.5 },
+      right: { label: "Right", dir: "right", rayHeight: 0.5 },
     },
     colors: {
       laces: "#ffffff",
@@ -154,11 +154,11 @@ const modelConfig = {
   PoloShirt: {
     component: PoloShirt,
     cameraPosition: [0, 0.2, 2],
-    decalPositions: {
-      front: { position: [0, 0.05, 0.08], rotation: [0, 0, 0] },
-      back:  { position: [0, 0.05, -0.08], rotation: [0, Math.PI, 0] },
-      left:  { position: [-0.08, 0.05, 0], rotation: [0, -Math.PI / 2, 0] },
-      right: { position: [0.08, 0.05, 0],  rotation: [0, Math.PI / 2, 0] },
+    placements: {
+      chest:       { label: "Chest",        dir: "front", rayHeight: 0.35 },
+      back:        { label: "Back",         dir: "back",  rayHeight: 0.35 },
+      leftSleeve:  { label: "Left Sleeve",  dir: "left",  rayHeight: 0.5 },
+      rightSleeve: { label: "Right Sleeve", dir: "right", rayHeight: 0.5 },
     },
     colors: {
       body: "#ffffff",

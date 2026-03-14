@@ -39,7 +39,7 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
 
       const meshes = [];
       modelGroupRef.current.traverse((child) => {
-        if (child.isMesh && !(child.material instanceof THREE.ShadowMaterial)) {
+        if (child.isMesh && !(child.material instanceof THREE.ShadowMaterial) && !child.userData.isDesignOverlay) {
           meshes.push(child);
         }
       });
@@ -98,8 +98,8 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
           switch (pc.dir) {
             case "front":  worldHit.z = worldBox.max.z + 0.002; worldHit.y = rayY; break;
             case "back":   worldHit.z = worldBox.min.z - 0.002; worldHit.y = rayY; break;
-            case "left":   worldHit.x = worldBox.min.x - 0.002; break;
-            case "right":  worldHit.x = worldBox.max.x + 0.002; break;
+            case "left":   worldHit.x = worldBox.min.x - 0.002; worldHit.y = rayY; break;
+            case "right":  worldHit.x = worldBox.max.x + 0.002; worldHit.y = rayY; break;
             case "top":    worldHit.y = worldBox.max.y + 0.002; break;
             case "bottom": worldHit.y = worldBox.min.y - 0.002; break;
             default: break;

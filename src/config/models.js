@@ -178,8 +178,8 @@ const modelConfig = {
     placements: {
       chest:       { label: "Chest",        dir: "front", rayHeight: 0.35 },
       back:        { label: "Back",         dir: "back",  rayHeight: 0.35 },
-      leftSleeve:  { label: "Left Sleeve",  dir: "left",  rayHeight: 0.5 },
-      rightSleeve: { label: "Right Sleeve", dir: "right", rayHeight: 0.5 },
+      leftSleeve:  { label: "Left Sleeve",  dir: "left",  rayHeight: 0.72 },
+      rightSleeve: { label: "Right Sleeve", dir: "right", rayHeight: 0.72 },
     },
     colors: {
       body: "#999999",

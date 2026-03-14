@@ -313,7 +313,7 @@ export default function LogoTextPanel({ modelName }) {
 
       <label className="logtext-label">Size</label>
       <input
-        type="range" min="0.02" max="0.6" step="0.01"
+        type="range" min="0.02" max="4.0" step="0.01"
         value={snap.size}
         onChange={(e) => (logoTextState.size = parseFloat(e.target.value))}
         className="logtext-range"
@@ -343,7 +343,7 @@ export default function LogoTextPanel({ modelName }) {
         onClick={() => {
           logoTextState.offsetX = 0;
           logoTextState.offsetY = 0;
-          logoTextState.size = 0.12;
+          logoTextState.size = 0.8;
           logoTextState.rotation = 0;
         }}
       >

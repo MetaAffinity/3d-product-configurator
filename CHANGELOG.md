@@ -6,6 +6,44 @@ For full developer instructions (how to add models, patterns, options), see **[D
 
 ---
 
+## [v1.2.3.1] - 2026-03-15
+
+### Added
+- **HighNeck T-Shirt model** — New high-neck t-shirt GLB model with 4 body panels (front, back, left sleeve, right sleeve).
+- **Design presets** — 4 design presets for HighNeckTshirt: Basic, Double Lines, Tribal Lines, Lines. Each preset applies transparent line-art overlays on specific body panels. Designs are selected via thumbnail cards in the Parts panel.
+- **Design color picker** — When a non-Basic design is selected, a color picker (8 preset swatches + custom color input) appears in the Parts panel to change the overlay line color in real-time.
+- **Seamless patterns** — 5 seamless body patterns for HighNeckTshirt: Brazilian, Coffee Break, Fiesta, Mexican Skull, Sugar Skulls. Applied with 4×4 RepeatWrapping for proper tiling.
+- **Multi-logo/text support** — Users can now place multiple logos and text overlays on the model simultaneously:
+  - "Place on Model" button saves the current logo/text to a persistent items list
+  - Placed items shown as a clickable list with type badge, text preview, placement label
+  - Click any placed item to edit it (live preview while editing)
+  - Delete button (×) to remove individual items
+  - Cancel button to discard edits and return to new-item mode
+  - Items are saved/restored per model when switching products
+  - Each item renders as an independent `<Decal>` via `DecalItem` sub-component
+
+### Fixed
+- **HighNeckTshirt blank page crash** — Handled multi-material arrays (`Array.isArray(child.material)`) in scene cloning. Replaced `useTexture` hook with imperative `THREE.TextureLoader` to prevent crash on failed loads.
+- **HighNeckTshirt model too small** — GLB bounding box was only 0.5×0.7 units. Scale increased from 0.35 to 3.0 with position adjusted to center model.
+- **HighNeckTshirt dark/black appearance** — GLB has no `pbrMetallicRoughness`, so Three.js defaulted metalness to 1.0 (fully metallic = black). Fixed by setting metalness=0, roughness=0.8 on cloned materials.
+- **Design overlays invisible** — Overlay textures are white lines on transparent background; needed `color: 0x000000` on the MeshBasicMaterial to tint them visible. Added `depthWrite: false`, `polygonOffset`, and `renderOrder: 1` to prevent z-fighting.
+- **Design overlays fading on body color change** — Body color effect was traversing all meshes including overlay children, overriding their material color. Added `userData.isDesignOverlay` check to skip overlays.
+- **Design selection not reactive** — `design` prop was passed as a static number from App.js proxy without `useSnapshot`. Added `useSnapshot(state)` in App.js so design changes trigger re-renders.
+- **Default body color too white** — Changed from #ffffff → #b8b8b8 (visible grey that doesn't blend with #ececed page background).
+
+### Technical
+- `src/Components/HighNeckTshirt.js` — New model component using `scene.clone(true)` + `<primitive>` rendering. `forEachMaterial` helper for array material handling. Imperative TextureLoader for patterns and design overlays. Design overlay: clone geometry → flip UV Y (`×-1`) → MeshBasicMaterial with transparent + designColor.
+- `src/config/models.js` — HighNeckTshirt config with placements, designs array (4 presets with per-part texture paths), `designColor` state field.
+- `src/config/patterns.js` — HighNeckTshirt body patterns (5 seamless JPGs).
+- `src/config/swatches.js` — HighNeckTshirt body color swatches (11 colors).
+- `src/config/logoTextState.js` — Restructured for multi-overlay: `items[]` array, `editingId`, helper functions (`placeItem`, `editItem`, `removeItem`, `cancelEditing`, `resetEditor`). Per-model save/restore includes items via deep copy.
+- `src/Components/LogoTextOverlay.jsx` — Refactored to render all items from array + live preview. Split into `DecalItem` sub-component with independent texture loading per item.
+- `src/Components/LogoTextPanel.jsx` — Placed items list UI, Place/Save/Cancel/Delete buttons, editing badge indicator.
+- `src/Components/PartsPicker.jsx` — Design selection grid + design color picker with swatches.
+- `src/App.js` — `useSnapshot(state)` for reactive design/designColor props.
+
+---
+
 ## [v1.2.3] - 2026-03-14
 
 ### Added
@@ -181,3 +219,5 @@ For full developer instructions (how to add models, patterns, options), see **[D
 | `v1.2.2` | Toolbar: screenshot, auto-rotate, reset, zoom, fullscreen |
 | `v1.2.2.1` | Sneaker GLB model added with full config |
 | `v1.2.2.2` | PoloShirt model, texture patterns, back strap toggle, per-model camera/zoom |
+| `v1.2.3` | Logo/text overlay, rotation, position pad, per-model state, product-specific placements |
+| `v1.2.3.1` | HighNeck TShirt model, design presets, design color, multi-logo/text support |

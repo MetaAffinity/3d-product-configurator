@@ -53,7 +53,7 @@ export const productColors = {
     sleeves: ["#ffffff", "#000000", "#d3d3d3", "#1a1a2e", "#c0392b", "#2980b9", "#27ae60", "#8e44ad"],
   },
   HighNeckTshirt: {
-    body: ["#b8b8b8", "#ffffff", "#000000", "#c0392b", "#e67e22", "#f1c40f", "#808000", "#27ae60", "#2980b9", "#8e44ad", "#e91e63"],
+    body: ["#999999", "#ffffff", "#000000", "#c0392b", "#e67e22", "#f1c40f", "#808000", "#27ae60", "#2980b9", "#8e44ad", "#e91e63"],
   },
 };
 

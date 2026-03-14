@@ -14,7 +14,7 @@ const DEFAULT_OVERLAY = {
   placement: null,   // set per model on init
   offsetX: 0,
   offsetY: 0,
-  size: 0.12,
+  size: 0.8,
   rotation: 0,
 };
 

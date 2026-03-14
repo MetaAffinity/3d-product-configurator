@@ -9,9 +9,11 @@ Complete reference for adding new models, patterns, options, and customizing the
 1. [Project Structure](#project-structure)
 2. [How to Add a New 3D Model](#how-to-add-a-new-3d-model)
 3. [How to Add Texture Patterns to a Model Part](#how-to-add-texture-patterns-to-a-model-part)
-4. [How to Add Toggle Options (Show/Hide Parts)](#how-to-add-toggle-options-showhide-parts)
-5. [Per-Model Camera Settings](#per-model-camera-settings)
-6. [File Reference](#file-reference)
+4. [How to Add Design Presets (Line Overlays)](#how-to-add-design-presets-line-overlays)
+5. [How to Add Toggle Options (Show/Hide Parts)](#how-to-add-toggle-options-showhide-parts)
+6. [Per-Model Camera Settings](#per-model-camera-settings)
+7. [Logo / Text Overlay (Multi-Overlay)](#logo--text-overlay)
+8. [File Reference](#file-reference)
 
 ---
 
@@ -24,13 +26,17 @@ src/
     Shoe.js                     — Shoe model component
     Sneaker.js                  — Sneaker model component (has toggle options)
     PoloShirt.js                — PoloShirt model component (has texture patterns)
+    HighNeckTshirt.js           — HighNeck T-Shirt component (designs + patterns)
+    LogoTextPanel.jsx           — Logo/text editor panel (multi-overlay)
+    LogoTextOverlay.jsx         — 3D decal renderer (multiple items)
     ModelPicker.jsx             — Top bar model selector thumbnails
     ColorPicker.jsx             — Right panel: color swatches + pattern thumbnails
     PartsPicker.jsx             — Left panel: clickable parts + option toggles
   config/
-    models.js                   — MAIN CONFIG: all model settings, colors, options
+    models.js                   — MAIN CONFIG: all model settings, colors, designs, options
     patterns.js                 — Texture patterns per model per part
     swatches.js                 — Predefined color swatches per model per part
+    logoTextState.js            — Multi-overlay logo/text state (items array, per-model)
   img/                          — Thumbnail images for model picker
 
 public/
@@ -335,6 +341,120 @@ export default function MyModel({ colors, options, textures, updateCurrent }) {
 **Why `flipY = false`:** GLTF/GLB models use `flipY = false` for UVs. Loaded textures default to `flipY = true`. Mismatch causes the design to appear flipped or misaligned.
 
 **Why `material-color="#ffffff"` when pattern active:** In THREE.js PBR, `material.color` multiplies with the texture. Any non-white color tints the texture. Setting to white ensures the design shows its true colors.
+
+---
+
+## How to Add Design Presets (Line Overlays)
+
+Design presets are transparent PNG overlays (e.g. line art, stripes) that layer on top of the model's body color. Users can switch between designs and pick the overlay color.
+
+**Reference implementation:** `src/Components/HighNeckTshirt.js`
+
+---
+
+### Step 1 — Prepare design textures
+
+- Format: **2048×2048 PNG** with **transparent background**
+- The design (e.g. lines) should be **white** on transparent — the material color tints them at runtime
+- Each file covers a single UV atlas region (front, back, sleeve) on a full 2048×2048 canvas
+- Place files in: `public/[modelname]/textures/[design-name]/front_1.png`, `back_1.png`, etc.
+- Add thumbnail images (256×256 PNG) in: `public/[modelname]/thumbs/[design-name].png`
+
+---
+
+### Step 2 — Add designs to models.js
+
+```js
+MyModel: {
+  // ...
+  designs: [
+    { label: "Basic", thumb: "/mymodel/thumbs/basic.png", textures: {} },
+    {
+      label: "Double Lines",
+      thumb: "/mymodel/thumbs/double-lines.png",
+      textures: {
+        front: ["/mymodel/textures/double-lines/front_1.png"],
+        back:  ["/mymodel/textures/double-lines/back_1.png"],
+      },
+    },
+  ],
+}
+```
+
+- First design should be "Basic" with empty `textures: {}` (no overlay)
+- Multiple textures per part are supported (layered on top of each other)
+- Parts without entries get no overlay
+
+The state auto-generates `design: 0` and `designColor: "#000000"` for models with `designs`.
+
+---
+
+### Step 3 — Add overlay rendering to the component
+
+In your component, handle the design overlay in a `useEffect`:
+
+```jsx
+// PART_TO_MESH maps design part names to GLB mesh names
+const PART_TO_MESH = { front: "Mesh_Front", back: "Mesh_Back" };
+
+// In the component:
+const overlayRef = useRef([]);
+
+useEffect(() => {
+  if (!designs) return;
+  const designCfg = designs[design ?? 0];
+
+  // Remove old overlays
+  overlayRef.current.forEach((o) => {
+    if (o.parent) o.parent.remove(o);
+    o.material?.dispose(); o.geometry?.dispose();
+  });
+  overlayRef.current = [];
+
+  if (!designCfg?.textures || Object.keys(designCfg.textures).length === 0) return;
+
+  const loader = new THREE.TextureLoader();
+  Object.entries(designCfg.textures).forEach(([part, paths]) => {
+    const meshName = PART_TO_MESH[part];
+    clonedScene.traverse((child) => {
+      if (child.isMesh && child.name === meshName) {
+        paths.forEach((texPath) => {
+          const geom = child.geometry.clone();
+          // Flip UV Y if needed for your model's UV layout
+          loader.load(texPath, (tex) => {
+            const mat = new THREE.MeshBasicMaterial({
+              map: tex, transparent: true, color: 0x000000,
+              depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1,
+            });
+            const overlay = new THREE.Mesh(geom, mat);
+            overlay.userData.isDesignOverlay = true;
+            overlay.renderOrder = 1;
+            child.add(overlay);
+            overlayRef.current.push(overlay);
+          });
+        });
+      }
+    });
+  });
+}, [design, designs, clonedScene]);
+
+// Update overlay color reactively
+useEffect(() => {
+  if (!designColor) return;
+  overlayRef.current.forEach((o) => {
+    o.material.color.set(designColor);
+    o.material.needsUpdate = true;
+  });
+}, [designColor]);
+```
+
+**Important:** Skip overlay meshes in body color effects with `child.userData.isDesignOverlay` check.
+
+---
+
+### Step 4 — Design UI is automatic
+
+The PartsPicker automatically shows design thumbnails and color picker when `designs` is configured. No UI changes needed.
 
 ---
 

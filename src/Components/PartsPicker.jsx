@@ -5,6 +5,7 @@ import { modelConfig } from "../config/models";
 export default function PartsPicker({ state, updateCurrent, modelName }) {
   const snap = useSnapshot(state);
   const optionsConfig = modelConfig[modelName]?.options;
+  const designsConfig = modelConfig[modelName]?.designs;
   // Hide parts that have a toggle option and it's off
   const parts = Object.keys(snap.colors).filter(
     (part) => !optionsConfig?.[part] || snap.options[part]
@@ -12,6 +13,25 @@ export default function PartsPicker({ state, updateCurrent, modelName }) {
 
   return (
     <div className="parts-picker">
+      {/* Design selection (for models that support it) */}
+      {designsConfig && (
+        <div className="parts-designs">
+          <h3>Design</h3>
+          <div className="design-grid">
+            {designsConfig.map((d, idx) => (
+              <div
+                key={idx}
+                className={`design-card ${snap.design === idx ? "active" : ""}`}
+                onClick={() => { state.design = idx; }}
+              >
+                <img src={d.thumb} alt={d.label} />
+                <span>{d.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <h3>{modelName} Parts</h3>
       <div className="parts-list">
         {parts.map((part) => (

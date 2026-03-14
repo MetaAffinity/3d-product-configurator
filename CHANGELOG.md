@@ -17,16 +17,21 @@ For full developer instructions (how to add models, patterns, options), see **[D
   - **Bold toggle**
   - **Curved text** — Toggle to arch text along a curve; "Arch Up / Down" toggle to flip direction
 - **Placement presets** — Front / Back / Left / Right buttons per model (positions defined per model in `models.js` under `decalPositions`)
-- **Size slider** — Scale the logo/text overlay (0.04–0.35 world units)
+- **Size slider** — Scale the logo/text overlay (0.02–0.6 world units — wider range for small detail logos or large full-chest prints)
+- **Rotation slider** — Spin the logo/text -180° to +180° around the surface normal; displays live degree value
 - **2D drag pad** — Replaced X/Y sliders with a click-and-drag position pad; drag anywhere inside the square to move the logo/text on the model surface
-- **Reset Position & Size** — Resets offset and size to defaults
+- **Reset Position, Size & Rotation** — Resets offset, size, and rotation to defaults
 - **Per-model decal positions** — `decalPositions` field added to all models in `models.js`; fallback defaults used if not defined
 
+### Fixed
+- **Back-bleed eliminated** — Decal stamp depth reduced from `localScale × 6` to `localScale × 0.15` so the projection box no longer punches through the garment to create phantom decals on the interior/back surface
+- **Text clipping ("ELLO" instead of "HELLO")** — 15% canvas padding per side keeps all text/arc geometry away from canvas edges; DecalGeometry stamp Z depth (`× 0.15`) still captures curved surface folds without over-projecting
+
 ### Technical
-- `src/config/logoTextState.js` — Valtio proxy for all logo/text state
-- `src/utils/createTextTexture.js` — Canvas-based text renderer (straight + curved arc)
-- `src/Components/LogoTextPanel.jsx` — UI panel (repositioned to bottom-left, no longer overlaps 3D model)
-- `src/Components/LogoTextOverlay.jsx` — 3D overlay; placed inside Float group; bounding box computed ONCE in modelGroupRef local space (worldToLocal strips Float offset → stable forever); per-face placement uses cached box dimensions with adaptive offset scaling; uses `MeshStandardMaterial` (roughness 0.85) for realistic blending
+- `src/config/logoTextState.js` — Added `rotation: 0` field (degrees)
+- `src/utils/createTextTexture.js` — Canvas-based text renderer (straight + curved arc) with 15% padding per side
+- `src/Components/LogoTextPanel.jsx` — UI panel (bottom-left); rotation slider added; size range widened to 0.02–0.6
+- `src/Components/LogoTextOverlay.jsx` — 3D overlay using `createPortal` + drei `<Decal>`; placed inside Float group; bounding box computed ONCE in mesh local space (worldToLocal strips Float offset → stable forever); rotation applied as quaternion around local surface normal on top of base orientation; thin stamp depth (× 0.15) eliminates back-bleed; uses `MeshStandardMaterial` (roughness 0.85) for realistic blending
 - Google Fonts loaded in `public/index.html`
 
 ---

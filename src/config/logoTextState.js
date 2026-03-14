@@ -18,4 +18,5 @@ export const logoTextState = proxy({
   offsetX: 0,           // -1 to 1
   offsetY: 0,           // -1 to 1
   size: 0.12,           // world-unit scale of the overlay plane
+  rotation: 0,          // degrees, -180 to 180, rotates around surface normal
 });

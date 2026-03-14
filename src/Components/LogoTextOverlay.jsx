@@ -199,6 +199,20 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
     return snap.size / entry.avgScale;
   }, [entry, snap.size]);
 
+  // Rotation around surface normal — combines base orientation with user rotation
+  const localRotation = useMemo(() => {
+    if (!entry) return new THREE.Euler();
+    const baseQuat = new THREE.Quaternion().setFromEuler(entry.localRotation);
+    // Compute local normal from localRotation (Z axis of the base quaternion)
+    const localNormal = new THREE.Vector3(0, 0, 1).applyQuaternion(baseQuat).normalize();
+    const userQuat = new THREE.Quaternion().setFromAxisAngle(
+      localNormal,
+      (snap.rotation * Math.PI) / 180
+    );
+    const combined = userQuat.multiply(baseQuat);
+    return new THREE.Euler().setFromQuaternion(combined);
+  }, [entry, snap.rotation]);
+
   if (!activeTexture || !entry || !localPos) return null;
 
   // Portal the <Decal> INTO the hit mesh.
@@ -209,11 +223,11 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
   return createPortal(
     <Decal
       position={localPos.toArray()}
-      rotation={entry.localRotation}
-      // XY = visual size in local units; Z = stamp depth must be large enough
-      // to capture geometry on curved surfaces — 6× ensures no clipping on
-      // shirt folds, shoe panels, etc.
-      scale={[localScale, localScale, localScale * 6]}
+      rotation={localRotation}
+      // XY = visual size in local units; Z = stamp depth — 0.15× keeps box
+      // thin so it doesn't punch through to the back surface (no back-bleed),
+      // yet large enough to capture curved surface geometry.
+      scale={[localScale, localScale, localScale * 0.15]}
     >
       <meshStandardMaterial
         map={activeTexture}

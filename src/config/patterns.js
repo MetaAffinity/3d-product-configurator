@@ -44,6 +44,7 @@ export const modelPatterns = {
     body: [
       { src: "/poloshirt/patterns/design1.png", thumb: "/poloshirt/patterns/design1thumb.jpg" },
       { src: "/poloshirt/patterns/design2.png" },
+      { src: "/poloshirt/patterns/design3.png" },
     ],
   },
 };

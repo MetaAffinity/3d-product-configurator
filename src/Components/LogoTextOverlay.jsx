@@ -5,56 +5,46 @@ import * as THREE from "three";
 import { logoTextState } from "../config/logoTextState";
 import { createTextTexture } from "../utils/createTextTexture";
 
-const _box   = new THREE.Box3();
-const _center = new THREE.Vector3();
-const _size   = new THREE.Vector3();
+// Reusable THREE objects — avoid per-frame allocation
+const _box       = new THREE.Box3();
+const _center    = new THREE.Vector3();
+const _size      = new THREE.Vector3();
+const _raycaster = new THREE.Raycaster();
+const _rayOrigin = new THREE.Vector3();
+const _rayDir    = new THREE.Vector3();
+const _normal    = new THREE.Vector3();
+const _lookAt    = new THREE.Vector3();
 
-// Returns face position & rotation in world space based on model bounding box
-function getFaceTransform(box, placement, offsetX, offsetY) {
-  box.getCenter(_center);
-  box.getSize(_size);
+export default function LogoTextOverlay({ modelGroupRef, modelName }) {
+  const snap     = useSnapshot(logoTextState);
+  const meshRef  = useRef();
+  const meshList = useRef([]); // cached list of model meshes for raycasting
 
-  const ox = offsetX * _size.x * 0.35;
-  const oy = offsetY * _size.y * 0.35;
+  // Rebuild mesh list when model switches
+  useEffect(() => {
+    meshList.current = [];
+    // Small delay so new model's meshes are mounted before traversal
+    const t = setTimeout(() => {
+      if (!modelGroupRef?.current) return;
+      modelGroupRef.current.traverse((child) => {
+        if (child.isMesh && !(child.material instanceof THREE.ShadowMaterial)) {
+          meshList.current.push(child);
+        }
+      });
+    }, 300);
+    return () => clearTimeout(t);
+  }, [modelGroupRef, modelName]);
 
-  switch (placement) {
-    case "back":
-      return {
-        pos: [_center.x + ox, _center.y + oy, box.min.z - 0.003],
-        rot: [0, Math.PI, 0],
-      };
-    case "left":
-      return {
-        pos: [box.min.x - 0.003, _center.y + oy, _center.z - ox],
-        rot: [0, -Math.PI / 2, 0],
-      };
-    case "right":
-      return {
-        pos: [box.max.x + 0.003, _center.y + oy, _center.z + ox],
-        rot: [0, Math.PI / 2, 0],
-      };
-    default: // front
-      return {
-        pos: [_center.x + ox, _center.y + oy, box.max.z + 0.003],
-        rot: [0, 0, 0],
-      };
-  }
-}
-
-export default function LogoTextOverlay({ modelGroupRef }) {
-  const snap = useSnapshot(logoTextState);
-  const meshRef = useRef();
-
-  // ── Text texture ─────────────────────────────────────────────────────
+  // ── Text texture ──────────────────────────────────────────────────
   const textCanvas = useMemo(() => {
     if (!snap.text.trim()) return null;
     return createTextTexture({
-      text: snap.text,
-      font: snap.font,
+      text:      snap.text,
+      font:      snap.font,
       textColor: snap.textColor,
-      bold: snap.bold,
-      curved: snap.curved,
-      curveUp: snap.curveUp,
+      bold:      snap.bold,
+      curved:    snap.curved,
+      curveUp:   snap.curveUp,
     });
   }, [snap.text, snap.font, snap.textColor, snap.bold, snap.curved, snap.curveUp]);
 
@@ -65,7 +55,7 @@ export default function LogoTextOverlay({ modelGroupRef }) {
     return tex;
   }, [textCanvas]);
 
-  // ── Logo texture ──────────────────────────────────────────────────────
+  // ── Logo texture ──────────────────────────────────────────────────
   const [logoTexture, setLogoTexture] = useState(null);
   useEffect(() => {
     if (!snap.logo) { setLogoTexture(null); return; }
@@ -75,21 +65,86 @@ export default function LogoTextOverlay({ modelGroupRef }) {
     });
   }, [snap.logo]);
 
-  // ── Active texture ────────────────────────────────────────────────────
   const activeTexture = snap.activeTab === "logo" ? logoTexture : textTexture;
 
-  // ── Follow model every frame (tracks Float animation) ────────────────
+  // ── Per-frame: raycast onto model surface, align plane to surface normal ─
   useFrame(() => {
-    if (!meshRef.current || !modelGroupRef?.current || !activeTexture) return;
+    if (!meshRef.current || !modelGroupRef?.current || !activeTexture) {
+      if (meshRef.current) meshRef.current.visible = false;
+      return;
+    }
 
+    // Lazily populate mesh list after model loads
+    if (meshList.current.length === 0) {
+      modelGroupRef.current.traverse((child) => {
+        if (child.isMesh && !(child.material instanceof THREE.ShadowMaterial)) {
+          meshList.current.push(child);
+        }
+      });
+    }
+    if (meshList.current.length === 0) { meshRef.current.visible = false; return; }
+
+    // World-space bounding box of the model
     _box.setFromObject(modelGroupRef.current);
-    if (_box.isEmpty()) return;
+    if (_box.isEmpty()) { meshRef.current.visible = false; return; }
+    _box.getCenter(_center);
+    _box.getSize(_size);
 
-    const { pos, rot } = getFaceTransform(_box, snap.placement, snap.offsetX, snap.offsetY);
-    meshRef.current.position.set(...pos);
-    meshRef.current.rotation.set(...rot);
-    meshRef.current.scale.setScalar(snap.size);
-    meshRef.current.visible = true;
+    const ox = snap.offsetX * _size.x * 0.35;
+    const oy = snap.offsetY * _size.y * 0.35;
+
+    // Shoot a ray from outside the model toward the chosen face
+    switch (snap.placement) {
+      case "back":
+        _rayOrigin.set(_center.x + ox, _center.y + oy, _box.min.z - 0.5);
+        _rayDir.set(0, 0, 1);
+        break;
+      case "left":
+        _rayOrigin.set(_box.min.x - 0.5, _center.y + oy, _center.z - ox);
+        _rayDir.set(1, 0, 0);
+        break;
+      case "right":
+        _rayOrigin.set(_box.max.x + 0.5, _center.y + oy, _center.z + ox);
+        _rayDir.set(-1, 0, 0);
+        break;
+      default: // front
+        _rayOrigin.set(_center.x + ox, _center.y + oy, _box.max.z + 0.5);
+        _rayDir.set(0, 0, -1);
+    }
+
+    _raycaster.set(_rayOrigin, _rayDir);
+    const hits = _raycaster.intersectObjects(meshList.current, false);
+
+    if (hits.length > 0) {
+      const hit = hits[0];
+
+      // Surface normal in world space
+      _normal
+        .copy(hit.face.normal)
+        .transformDirection(hit.object.matrixWorld)
+        .normalize();
+
+      // Place plane on the surface with a tiny offset to prevent z-fighting
+      meshRef.current.position.copy(hit.point).addScaledVector(_normal, 0.0015);
+
+      // Rotate plane so it lies flush with the surface tangent
+      _lookAt.copy(meshRef.current.position).add(_normal);
+      meshRef.current.lookAt(_lookAt);
+
+      meshRef.current.scale.setScalar(snap.size);
+      meshRef.current.visible = true;
+    } else {
+      // No intersection — fall back to bounding-box face
+      if (snap.placement === "back") {
+        meshRef.current.position.set(_center.x + ox, _center.y + oy, _box.min.z - 0.003);
+        meshRef.current.rotation.set(0, Math.PI, 0);
+      } else {
+        meshRef.current.position.set(_center.x + ox, _center.y + oy, _box.max.z + 0.003);
+        meshRef.current.rotation.set(0, 0, 0);
+      }
+      meshRef.current.scale.setScalar(snap.size);
+      meshRef.current.visible = true;
+    }
   });
 
   if (!activeTexture) return null;

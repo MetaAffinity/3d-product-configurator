@@ -6,36 +6,63 @@ import { logoTextState } from "../config/logoTextState";
 import { createTextTexture } from "../utils/createTextTexture";
 
 // Reusable THREE objects — avoid per-frame allocation
-const _box       = new THREE.Box3();
-const _center    = new THREE.Vector3();
-const _size      = new THREE.Vector3();
-const _raycaster = new THREE.Raycaster();
-const _rayOrigin = new THREE.Vector3();
-const _rayDir    = new THREE.Vector3();
-const _normal    = new THREE.Vector3();
-const _lookAt    = new THREE.Vector3();
+const _pos = new THREE.Vector3();
 
+/**
+ * Logo / Text overlay — robust multi-model strategy:
+ *
+ *   1. After each model loads, compute the world-space bounding box ONCE and
+ *      convert it to the modelGroupRef group's LOCAL space (worldToLocal).
+ *      Since Float is a pure translation, worldToLocal cancels it out — the
+ *      resulting local bbox is identical at every Float animation frame.
+ *      This cached box never drifts.
+ *
+ *   2. In useFrame, read the cached local bbox and place the plane at the
+ *      chosen face (front/back/left/right) in LOCAL space. No raycasting,
+ *      no per-frame bbox work — just a few vector ops.
+ *
+ *   3. The overlay is a sibling of the model inside the Float group, so it
+ *      floats naturally without any tracking.
+ *
+ *   4. The 2D drag-pad offsets (offsetX/offsetY) slide the logo along the
+ *      correct surface axes of each face (horizontal / vertical), scaled
+ *      relative to the model's own dimensions — works for any model size.
+ */
 export default function LogoTextOverlay({ modelGroupRef, modelName }) {
-  const snap     = useSnapshot(logoTextState);
-  const meshRef  = useRef();
-  const meshList = useRef([]); // cached list of model meshes for raycasting
+  const snap    = useSnapshot(logoTextState);
+  const meshRef = useRef();
 
-  // Rebuild mesh list when model switches
+  // Bounding box in modelGroupRef LOCAL space — stable across Float animation
+  const localBox = useRef(null);
+
   useEffect(() => {
-    meshList.current = [];
-    // Small delay so new model's meshes are mounted before traversal
+    localBox.current = null; // invalidate on model switch
     const t = setTimeout(() => {
       if (!modelGroupRef?.current) return;
-      modelGroupRef.current.traverse((child) => {
-        if (child.isMesh && !(child.material instanceof THREE.ShadowMaterial)) {
-          meshList.current.push(child);
-        }
-      });
-    }, 300);
+
+      // World bbox → local bbox (strips Float's current Y offset)
+      const worldBox = new THREE.Box3().setFromObject(modelGroupRef.current);
+      const lMin = modelGroupRef.current.worldToLocal(worldBox.min.clone());
+      const lMax = modelGroupRef.current.worldToLocal(worldBox.max.clone());
+
+      // worldToLocal can invert axes — re-normalise so min < max on every axis
+      localBox.current = new THREE.Box3(
+        new THREE.Vector3(
+          Math.min(lMin.x, lMax.x),
+          Math.min(lMin.y, lMax.y),
+          Math.min(lMin.z, lMax.z),
+        ),
+        new THREE.Vector3(
+          Math.max(lMin.x, lMax.x),
+          Math.max(lMin.y, lMax.y),
+          Math.max(lMin.z, lMax.z),
+        ),
+      );
+    }, 400);
     return () => clearTimeout(t);
   }, [modelGroupRef, modelName]);
 
-  // ── Text texture ──────────────────────────────────────────────────
+  // ── Text texture ──────────────────────────────────────────────────────────
   const textCanvas = useMemo(() => {
     if (!snap.text.trim()) return null;
     return createTextTexture({
@@ -55,7 +82,7 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
     return tex;
   }, [textCanvas]);
 
-  // ── Logo texture ──────────────────────────────────────────────────
+  // ── Logo texture ──────────────────────────────────────────────────────────
   const [logoTexture, setLogoTexture] = useState(null);
   useEffect(() => {
     if (!snap.logo) { setLogoTexture(null); return; }
@@ -67,93 +94,54 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
 
   const activeTexture = snap.activeTab === "logo" ? logoTexture : textTexture;
 
-  // ── Per-frame: raycast onto model surface, align plane to surface normal ─
+  // ── Per-frame placement ───────────────────────────────────────────────────
   useFrame(() => {
-    if (!meshRef.current || !modelGroupRef?.current || !activeTexture) {
+    if (!meshRef.current || !activeTexture || !localBox.current) {
       if (meshRef.current) meshRef.current.visible = false;
       return;
     }
 
-    // Lazily populate mesh list after model loads
-    if (meshList.current.length === 0) {
-      modelGroupRef.current.traverse((child) => {
-        if (child.isMesh && !(child.material instanceof THREE.ShadowMaterial)) {
-          meshList.current.push(child);
-        }
-      });
-    }
-    if (meshList.current.length === 0) { meshRef.current.visible = false; return; }
+    const box = localBox.current;
+    const cx = (box.min.x + box.max.x) / 2;
+    const cy = (box.min.y + box.max.y) / 2;
+    const cz = (box.min.z + box.max.z) / 2;
 
-    // World-space bounding box of the model
-    _box.setFromObject(modelGroupRef.current);
-    if (_box.isEmpty()) { meshRef.current.visible = false; return; }
-    _box.getCenter(_center);
-    _box.getSize(_size);
+    // Offset step: relative to model's own bbox size so it works for every
+    // model regardless of scale. Max pad travel (±3) = ±30% of that dimension.
+    const stepH = (box.max.x - box.min.x) * 0.1; // horizontal step
+    const stepV = (box.max.y - box.min.y) * 0.1; // vertical step
+    const stepD = (box.max.z - box.min.z) * 0.1; // depth-axis step (left/right faces)
 
-    const ox = snap.offsetX * _size.x * 0.35;
-    const oy = snap.offsetY * _size.y * 0.35;
+    const eps = 0.003; // tiny outward offset to prevent z-fighting
 
-    // Shoot a ray from outside the model toward the chosen face
     switch (snap.placement) {
       case "back":
-        _rayOrigin.set(_center.x + ox, _center.y + oy, _box.min.z - 0.5);
-        _rayDir.set(0, 0, 1);
-        break;
-      case "left":
-        _rayOrigin.set(_box.min.x - 0.5, _center.y + oy, _center.z - ox);
-        _rayDir.set(1, 0, 0);
-        break;
-      case "right":
-        _rayOrigin.set(_box.max.x + 0.5, _center.y + oy, _center.z + ox);
-        _rayDir.set(-1, 0, 0);
-        break;
-      default: // front
-        _rayOrigin.set(_center.x + ox, _center.y + oy, _box.max.z + 0.5);
-        _rayDir.set(0, 0, -1);
-    }
-
-    _raycaster.set(_rayOrigin, _rayDir);
-    const hits = _raycaster.intersectObjects(meshList.current, false);
-
-    if (hits.length > 0) {
-      const hit = hits[0];
-
-      // Surface normal in world space
-      _normal
-        .copy(hit.face.normal)
-        .transformDirection(hit.object.matrixWorld)
-        .normalize();
-
-      // World-space position on surface
-      const worldPos = hit.point.clone().addScaledVector(_normal, 0.0015);
-
-      // Convert to local space of this mesh's parent (the modelGroupRef group inside Float)
-      meshRef.current.position.copy(
-        modelGroupRef.current.worldToLocal(worldPos.clone())
-      );
-
-      // lookAt uses world-space target — point one unit along the normal
-      _lookAt.copy(worldPos).add(_normal);
-      meshRef.current.lookAt(_lookAt);
-
-      meshRef.current.scale.setScalar(snap.size);
-      meshRef.current.visible = true;
-    } else {
-      // No intersection — fall back: convert world-space bbox corners to group local space
-      const lc = modelGroupRef.current.worldToLocal(_center.clone());
-      const lMin = modelGroupRef.current.worldToLocal(_box.min.clone());
-      const lMax = modelGroupRef.current.worldToLocal(_box.max.clone());
-
-      if (snap.placement === "back") {
-        meshRef.current.position.set(lc.x + ox, lc.y + oy, lMin.z - 0.003);
+        _pos.set(cx + snap.offsetX * stepH, cy + snap.offsetY * stepV, box.min.z - eps);
+        meshRef.current.position.copy(_pos);
         meshRef.current.rotation.set(0, Math.PI, 0);
-      } else {
-        meshRef.current.position.set(lc.x + ox, lc.y + oy, lMax.z + 0.003);
+        break;
+
+      case "left":
+        // offsetX slides along Z (depth axis of this face), offsetY along Y
+        _pos.set(box.min.x - eps, cy + snap.offsetY * stepV, cz - snap.offsetX * stepD);
+        meshRef.current.position.copy(_pos);
+        meshRef.current.rotation.set(0, -Math.PI / 2, 0);
+        break;
+
+      case "right":
+        _pos.set(box.max.x + eps, cy + snap.offsetY * stepV, cz + snap.offsetX * stepD);
+        meshRef.current.position.copy(_pos);
+        meshRef.current.rotation.set(0, Math.PI / 2, 0);
+        break;
+
+      default: // front
+        _pos.set(cx + snap.offsetX * stepH, cy + snap.offsetY * stepV, box.max.z + eps);
+        meshRef.current.position.copy(_pos);
         meshRef.current.rotation.set(0, 0, 0);
-      }
-      meshRef.current.scale.setScalar(snap.size);
-      meshRef.current.visible = true;
     }
+
+    meshRef.current.scale.setScalar(snap.size);
+    meshRef.current.visible = true;
   });
 
   if (!activeTexture) return null;

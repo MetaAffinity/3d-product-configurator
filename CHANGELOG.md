@@ -26,7 +26,7 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - `src/config/logoTextState.js` — Valtio proxy for all logo/text state
 - `src/utils/createTextTexture.js` — Canvas-based text renderer (straight + curved arc)
 - `src/Components/LogoTextPanel.jsx` — UI panel (repositioned to bottom-left, no longer overlaps 3D model)
-- `src/Components/LogoTextOverlay.jsx` — 3D overlay; placed inside Float group so it tracks model animation; uses `MeshStandardMaterial` (roughness 0.85) for realistic light-matched blending; per-frame raycasting aligns plane to surface normal
+- `src/Components/LogoTextOverlay.jsx` — 3D overlay; placed inside Float group; bounding box computed ONCE in modelGroupRef local space (worldToLocal strips Float offset → stable forever); per-face placement uses cached box dimensions with adaptive offset scaling; uses `MeshStandardMaterial` (roughness 0.85) for realistic blending
 - Google Fonts loaded in `public/index.html`
 
 ---

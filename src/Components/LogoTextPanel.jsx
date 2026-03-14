@@ -24,12 +24,16 @@ export default function LogoTextPanel({ modelName }) {
   const padDragging = useRef(false);
 
   // 2D Position Pad — drag anywhere inside the square
+  // Range ±12 so the full shirt height (collar → hem) is reachable
+  const PAD_RANGE = 12;
+  const ARROW_STEP = 0.4;
+
   const getPadOffset = useCallback((clientX, clientY) => {
     const rect = padRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
-    logoTextState.offsetX = (x - 0.5) * 6;
-    logoTextState.offsetY = -(y - 0.5) * 6;
+    logoTextState.offsetX = (x - 0.5) * PAD_RANGE;
+    logoTextState.offsetY = -(y - 0.5) * PAD_RANGE;
   }, []);
 
   const handlePadDown = useCallback((e) => {
@@ -47,8 +51,8 @@ export default function LogoTextPanel({ modelName }) {
   }, [getPadOffset]);
 
   // Dot position in pad (0–100%)
-  const dotX = Math.max(2, Math.min(98, (snap.offsetX / 6 + 0.5) * 100));
-  const dotY = Math.max(2, Math.min(98, (-snap.offsetY / 6 + 0.5) * 100));
+  const dotX = Math.max(2, Math.min(98, (snap.offsetX / PAD_RANGE + 0.5) * 100));
+  const dotY = Math.max(2, Math.min(98, (-snap.offsetY / PAD_RANGE + 0.5) * 100));
   const config = modelConfig[modelName];
   const availablePlacements = config.decalPositions
     ? Object.keys(config.decalPositions)
@@ -226,6 +230,41 @@ export default function LogoTextPanel({ modelName }) {
           className="logtext-pad-dot"
           style={{ left: `${dotX}%`, top: `${dotY}%` }}
         />
+      </div>
+
+      {/* Arrow nudge buttons */}
+      <div className="logtext-arrows">
+        <div className="logtext-arrows-row">
+          <button
+            className="logtext-arrow-btn"
+            onClick={() => { logoTextState.offsetY = Math.min(PAD_RANGE / 2, snap.offsetY + ARROW_STEP); }}
+            title="Up"
+          >▲</button>
+        </div>
+        <div className="logtext-arrows-row">
+          <button
+            className="logtext-arrow-btn"
+            onClick={() => { logoTextState.offsetX = Math.max(-PAD_RANGE / 2, snap.offsetX - ARROW_STEP); }}
+            title="Left"
+          >◀</button>
+          <button
+            className="logtext-arrow-btn logtext-arrow-center"
+            onClick={() => { logoTextState.offsetX = 0; logoTextState.offsetY = 0; }}
+            title="Center"
+          >·</button>
+          <button
+            className="logtext-arrow-btn"
+            onClick={() => { logoTextState.offsetX = Math.min(PAD_RANGE / 2, snap.offsetX + ARROW_STEP); }}
+            title="Right"
+          >▶</button>
+        </div>
+        <div className="logtext-arrows-row">
+          <button
+            className="logtext-arrow-btn"
+            onClick={() => { logoTextState.offsetY = Math.max(-PAD_RANGE / 2, snap.offsetY - ARROW_STEP); }}
+            title="Down"
+          >▼</button>
+        </div>
       </div>
 
       <label className="logtext-label">Size</label>

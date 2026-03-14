@@ -182,7 +182,7 @@ const modelConfig = {
       rightSleeve: { label: "Right Sleeve", dir: "right", rayHeight: 0.5 },
     },
     colors: {
-      body: "#d0d0d0",
+      body: "#b8b8b8",
     },
     cameraAngles: {
       body: [0, 1.2],

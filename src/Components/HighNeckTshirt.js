@@ -59,11 +59,11 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
     return s;
   }, [scene]);
 
-  // Apply body color to all meshes
+  // Apply body color to all meshes (skip design overlay children)
   useEffect(() => {
     const color = texturesSnap.body ? "#ffffff" : snap.body;
     clonedScene.traverse((child) => {
-      if (!child.isMesh) return;
+      if (!child.isMesh || child.userData.isDesignOverlay) return;
       forEachMaterial(child, (m) => {
         if (m.color) {
           m.color.set(color);

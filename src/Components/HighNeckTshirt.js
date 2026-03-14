@@ -35,7 +35,7 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
     }
   };
 
-  // Clone scene with independent materials
+  // Clone scene with independent materials, fix metalness (GLB has no PBR defaults → metalness=1 → looks black)
   const clonedScene = useMemo(() => {
     const s = scene.clone(true);
     s.traverse((child) => {
@@ -45,11 +45,15 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
         child.material = child.material.map((m) => {
           const c = m.clone();
           c.name = "body";
+          if (c.metalness !== undefined) c.metalness = 0;
+          if (c.roughness !== undefined) c.roughness = 0.8;
           return c;
         });
       } else if (child.material) {
         child.material = child.material.clone();
         child.material.name = "body";
+        if (child.material.metalness !== undefined) child.material.metalness = 0;
+        if (child.material.roughness !== undefined) child.material.roughness = 0.8;
       }
     });
     return s;
@@ -148,6 +152,7 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
               const mat = new THREE.MeshBasicMaterial({
                 map: tex,
                 transparent: true,
+                color: 0x000000,
                 depthWrite: false,
                 polygonOffset: true,
                 polygonOffsetFactor: -1,

@@ -3,7 +3,6 @@ import { useGLTF, useTexture } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import * as THREE from "three";
 import { modelPatterns } from "../config/patterns";
-import { modelConfig } from "../config/models";
 
 // Mesh names from GLB → these are the 4 body panels
 const BODY_MESHES = [
@@ -23,7 +22,7 @@ const PART_TO_MESH = {
 const bodyPatternConfig = modelPatterns.HighNeckTshirt?.body || [];
 const bodyPatterns = bodyPatternConfig.map((p) => p.src);
 
-export default function HighNeckTshirt({ colors, options, textures, design, updateCurrent }) {
+export default function HighNeckTshirt({ colors, options, textures, design, designs, updateCurrent }) {
   const { scene } = useGLTF("/highneck-tshirt/HighNeckTshirt.glb");
   const snap = useSnapshot(colors);
   const texturesSnap = useSnapshot(textures);
@@ -99,7 +98,6 @@ export default function HighNeckTshirt({ colors, options, textures, design, upda
 
   // Apply design overlays
   useEffect(() => {
-    const designs = modelConfig.HighNeckTshirt?.designs;
     if (!designs) return;
     const designIdx = design ?? 0;
     const designCfg = designs[designIdx];

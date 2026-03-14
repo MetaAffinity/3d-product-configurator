@@ -210,7 +210,10 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
     <Decal
       position={localPos.toArray()}
       rotation={entry.localRotation}
-      scale={localScale}
+      // XY = visual size in local units; Z = stamp depth must be large enough
+      // to capture geometry on curved surfaces — 6× ensures no clipping on
+      // shirt folds, shoe panels, etc.
+      scale={[localScale, localScale, localScale * 6]}
     >
       <meshStandardMaterial
         map={activeTexture}

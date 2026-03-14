@@ -19,9 +19,15 @@ export function createTextTexture({ text, font, textColor, bold, curved, curveUp
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
+  // Content is drawn in the inner 70% of the canvas (15% padding each side).
+  // This keeps text/curves away from the DecalGeometry box edges so nothing
+  // gets clipped on curved surfaces.
+  const pad = size * 0.15; // 15% padding on each side
+  const inner = size - pad * 2; // usable content area
+
   if (curved && text.length > 0) {
-    // Draw each character along an arc
-    const r = 160;
+    // Draw each character along an arc — scaled to fit within inner area
+    const r = inner * 0.32;
     const charSpacing = Math.min(0.18, (Math.PI * 0.85) / Math.max(text.length, 1));
     const totalAngle = charSpacing * (text.length - 1);
     const startAngle = -totalAngle / 2;
@@ -41,8 +47,8 @@ export function createTextTexture({ text, font, textColor, bold, curved, curveUp
     }
     ctx.restore();
   } else {
-    // Straight text — wrap if too wide
-    const maxWidth = size * 0.9;
+    // Straight text — wrap if too wide, constrained to inner area
+    const maxWidth = inner;
     const words = text.split(" ");
     const lines = [];
     let current = "";

@@ -75,7 +75,9 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
     if (!selected) return;
     const loader = new THREE.TextureLoader();
     loader.load(selected, (tex) => {
-      tex.flipY = false;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(4, 4);
       tex.encoding = THREE.sRGBEncoding;
       tex.needsUpdate = true;
       clonedScene.traverse((child) => {
@@ -141,13 +143,18 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
 
             loader.load(texPath, (tex) => {
               tex.encoding = THREE.sRGBEncoding;
+              tex.flipY = true;
+              tex.needsUpdate = true;
               const mat = new THREE.MeshBasicMaterial({
                 map: tex,
                 transparent: true,
+                depthWrite: false,
+                polygonOffset: true,
+                polygonOffsetFactor: -1,
               });
               const overlay = new THREE.Mesh(geom, mat);
               overlay.userData.isDesignOverlay = true;
-              overlay.castShadow = true;
+              overlay.renderOrder = 1;
               child.add(overlay);
               overlayRef.current.push(overlay);
             });
@@ -169,8 +176,8 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
   return (
     <group
       dispose={null}
-      scale={[0.35, 0.35, 0.35]}
-      position={[0, -1.0, 0]}
+      scale={[3.0, 3.0, 3.0]}
+      position={[0, -4.0, 0]}
       onPointerOver={(e) => { e.stopPropagation(); setHovered(e.object.material?.name || "body"); }}
       onPointerOut={(e) => { if (e.intersections.length === 0) setHovered(null); }}
       onPointerDown={(e) => { e.stopPropagation(); updateCurrent(e.object.material?.name || "body"); }}

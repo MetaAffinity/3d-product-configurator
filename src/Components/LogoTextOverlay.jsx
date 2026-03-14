@@ -1,8 +1,8 @@
 import React, { useMemo, useEffect, useRef, useState } from "react";
+import { createPortal } from "@react-three/fiber";
+import { Decal } from "@react-three/drei";
 import { useSnapshot } from "valtio";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { DecalGeometry } from "three/examples/jsm/geometries/DecalGeometry.js";
 import { logoTextState } from "../config/logoTextState";
 import { createTextTexture } from "../utils/createTextTexture";
 import { modelConfig } from "../config/models";
@@ -14,67 +14,35 @@ const FACE_DIR = {
   right: new THREE.Vector3(-1,  0,  0),
 };
 
-const FACE_EULER = {
-  front: new THREE.Euler(0,              0, 0),
-  back:  new THREE.Euler(0,  Math.PI,       0),
-  left:  new THREE.Euler(0, -Math.PI / 2,  0),
-  right: new THREE.Euler(0,  Math.PI / 2,  0),
-};
-
-// Per-frame reusable vectors
-const _pos = new THREE.Vector3();
-const _lk  = new THREE.Vector3();
-const _n   = new THREE.Vector3();
-
+/**
+ * Surface-conforming logo/text overlay.
+ *
+ * Strategy:
+ *  1. One-time setup (400 ms after mount): raycast per placement to find the
+ *     actual surface hit mesh + hit point. Convert everything to HIT MESH
+ *     LOCAL SPACE — this is Float-immune because Float is a pure translation
+ *     and worldToLocal cancels it.
+ *  2. Use R3F createPortal to render drei's <Decal> directly INSIDE the hit
+ *     mesh's Three.js object. The <Decal> component reads its parent mesh from
+ *     the Three.js hierarchy and bakes DecalGeometry onto its surface.
+ *     Because <Decal> is a child of the hit mesh, it floats with the model
+ *     automatically — no per-frame tracking needed.
+ *  3. The 2D pad offsetX/Y slides localPos along the surface tangent/bitangent
+ *     (computed in mesh local space), keeping movement on-surface.
+ *  4. scale = snap.size / meshWorldScale so the world-unit size slider maps
+ *     correctly to the mesh's local coordinate system.
+ */
 export default function LogoTextOverlay({ modelGroupRef, modelName }) {
   const snap = useSnapshot(logoTextState);
 
-  // JSX mesh ref — used as flat-plane fallback (always rendered; hidden when decal works)
-  const meshRef = useRef();
-
-  // Imperative decal mesh added as child of hit mesh for surface-conforming rendering
-  const decalMeshRef   = useRef(null);
-  const decalMatRef    = useRef(null);
-  const currentParent  = useRef(null);
-
-  // Per-placement setup cache
-  // { [p]: { hitMesh, localPos, localTangent, localBitangent, stepH, stepV } }
+  // Per-placement cache built after model loads
   const setupCache = useRef({});
+  const [cacheReady, setCacheReady] = useState(0); // bump to force re-render
 
-  // Dirty flag — do NOT consume until ALL preconditions are met
-  const dirty = useRef(true);
-
-  // ── Create persistent imperative decal mesh (once) ───────────────────────
-  useEffect(() => {
-    const mat = new THREE.MeshStandardMaterial({
-      transparent: true,
-      alphaTest: 0.01,
-      depthWrite: false,
-      roughness: 0.85,
-      metalness: 0,
-      polygonOffset: true,
-      polygonOffsetFactor: -4,
-      polygonOffsetUnits: -4,
-    });
-    const mesh = new THREE.Mesh(new THREE.BufferGeometry(), mat);
-    mesh.renderOrder = 999;
-    mesh.visible = false;
-    decalMeshRef.current = mesh;
-    decalMatRef.current  = mat;
-    return () => {
-      if (mesh.parent) mesh.parent.remove(mesh);
-      mat.dispose();
-      mesh.geometry.dispose();
-    };
-  }, []);
-
-  // ── One-time setup: raycast per placement ───────────────────────────────
+  // ── One-time setup ───────────────────────────────────────────────────────
   useEffect(() => {
     setupCache.current = {};
-    dirty.current = true;
-    // Hide fallback plane on model switch until ready
-    if (meshRef.current) meshRef.current.visible = false;
-    if (decalMeshRef.current) decalMeshRef.current.visible = false;
+    setCacheReady(0);
 
     const t = setTimeout(() => {
       if (!modelGroupRef?.current) return;
@@ -103,8 +71,7 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
         const dir = FACE_DIR[p];
         if (!dir) return;
 
-        // Shoot ray from outside bbox toward model center on each face axis.
-        // For front/back use 35% height to target chest, not protruding collar.
+        // Front/back: aim at 35% height (chest area, not collar)
         const origin = wCenter.clone();
         const yChest = worldBox.min.y + wSize.y * 0.35;
         const margin = Math.max(wSize.x, wSize.y, wSize.z) * 0.5 + 0.3;
@@ -117,68 +84,72 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
         raycaster.set(origin, dir);
         const hits = raycaster.intersectObjects(meshes, false);
 
-        let hitMesh, localPos, worldNormal;
+        let hitMesh, worldNormal, worldHit;
 
         if (hits.length > 0) {
-          const hit = hits[0];
-          hitMesh = hit.object;
+          const hit   = hits[0];
+          hitMesh     = hit.object;
           worldNormal = hit.face.normal.clone()
-            .transformDirection(hitMesh.matrixWorld)
-            .normalize();
-          const worldHit = hit.point.clone().addScaledVector(worldNormal, 0.001);
-          localPos = hitMesh.worldToLocal(worldHit.clone());
+            .transformDirection(hitMesh.matrixWorld).normalize();
+          worldHit    = hit.point.clone().addScaledVector(worldNormal, 0.002);
         } else {
-          // Fallback: bbox face centre — pick the mesh with most vertices as target
+          // Fallback: largest mesh + bbox face centre
           hitMesh = meshes.reduce((a, b) =>
             (a.geometry?.attributes?.position?.count || 0) >=
             (b.geometry?.attributes?.position?.count || 0) ? a : b
           );
-          // Use face direction as the outward normal
           worldNormal = dir.clone().negate();
-          const fbWorld = wCenter.clone();
-          if      (p === "front") fbWorld.z = worldBox.max.z + 0.002;
-          else if (p === "back")  fbWorld.z = worldBox.min.z - 0.002;
-          else if (p === "left")  fbWorld.x = worldBox.min.x - 0.002;
-          else if (p === "right") fbWorld.x = worldBox.max.x + 0.002;
-          if (p === "front" || p === "back") fbWorld.y = yChest;
-          localPos = hitMesh.worldToLocal(fbWorld.clone());
+          worldHit    = wCenter.clone();
+          if      (p === "front") { worldHit.z = worldBox.max.z + 0.002; worldHit.y = yChest; }
+          else if (p === "back")  { worldHit.z = worldBox.min.z - 0.002; worldHit.y = yChest; }
+          else if (p === "left")  worldHit.x = worldBox.min.x - 0.002;
+          else if (p === "right") worldHit.x = worldBox.max.x + 0.002;
         }
 
-        // Build tangent/bitangent in hit mesh local space for pad offsets
-        const worldUp = new THREE.Vector3(0, 1, 0);
-        let wTangent = new THREE.Vector3().crossVectors(worldUp, worldNormal);
-        if (wTangent.lengthSq() < 0.001) {
+        // Convert to hit mesh LOCAL space (Float-immune)
+        const matInv    = hitMesh.matrixWorld.clone().invert();
+        const localPos  = hitMesh.worldToLocal(worldHit.clone());
+
+        // Tangent/bitangent in mesh local space for pad offset
+        const worldUp   = new THREE.Vector3(0, 1, 0);
+        let wTangent    = new THREE.Vector3().crossVectors(worldUp, worldNormal);
+        if (wTangent.lengthSq() < 0.001)
           wTangent.crossVectors(new THREE.Vector3(0, 0, 1), worldNormal);
-        }
         wTangent.normalize();
         const wBitangent = new THREE.Vector3()
-          .crossVectors(worldNormal, wTangent)
-          .normalize();
+          .crossVectors(worldNormal, wTangent).normalize();
 
-        const matInv = hitMesh.matrixWorld.clone().invert();
         const localTangent   = wTangent.clone().transformDirection(matInv).normalize();
         const localBitangent = wBitangent.clone().transformDirection(matInv).normalize();
 
-        // Adaptive step — 10% of model bbox dimension per pad unit (range ±3 → ±30%)
-        const stepH = (p === "left" || p === "right") ? wSize.z * 0.1 : wSize.x * 0.1;
-        const stepV = wSize.y * 0.1;
+        // Decal rotation in mesh local space — orient stamp box along surface normal
+        const localNormal = worldNormal.clone().transformDirection(matInv).normalize();
+        const quat = new THREE.Quaternion().setFromUnitVectors(
+          new THREE.Vector3(0, 0, 1),
+          localNormal
+        );
+        const localRotation = new THREE.Euler().setFromQuaternion(quat);
 
-        // Also store world-space data for the flat-plane fallback
-        const worldCenterForFallback = wCenter.clone();
-        if (p === "front" || p === "back") worldCenterForFallback.y = yChest;
+        // Mesh world scale — needed to convert snap.size (world units) → local units
+        const meshWorldScale = new THREE.Vector3();
+        hitMesh.getWorldScale(meshWorldScale);
+        const avgScale = (meshWorldScale.x + meshWorldScale.y + meshWorldScale.z) / 3;
+
+        // Adaptive pad step in mesh local space units
+        const stepH = (p === "left" || p === "right")
+          ? (wSize.z / avgScale) * 0.1
+          : (wSize.x / avgScale) * 0.1;
+        const stepV = (wSize.y / avgScale) * 0.1;
 
         setupCache.current[p] = {
-          hitMesh, localPos, localTangent, localBitangent, stepH, stepV,
-          // fallback flat-plane data (world-space, for meshRef)
-          fbWorldCenter: worldCenterForFallback,
-          fbWorldNormal: worldNormal.clone(),
-          stepHw: stepH, stepVw: stepV,
-          wTangent: wTangent.clone(), wBitangent: wBitangent.clone(),
+          hitMesh, localPos, localTangent, localBitangent,
+          localRotation, avgScale, stepH, stepV,
         };
       });
 
-      dirty.current = true; // signal useFrame to (re-)build
+      setCacheReady((n) => n + 1);
     }, 400);
+
     return () => clearTimeout(t);
   }, [modelGroupRef, modelName]);
 
@@ -210,136 +181,49 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
 
   const activeTexture = snap.activeTab === "logo" ? logoTexture : textTexture;
 
-  // Raise dirty flag on any visual state change
-  useEffect(() => { dirty.current = true; },
+  // ── Current placement data ───────────────────────────────────────────────
+  const entry = setupCache.current[snap.placement];
+
+  // Local-space position with 2D pad offset applied
+  const localPos = useMemo(() => {
+    if (!entry) return null;
+    return entry.localPos.clone()
+      .addScaledVector(entry.localTangent,   snap.offsetX * entry.stepH)
+      .addScaledVector(entry.localBitangent, snap.offsetY * entry.stepV);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [snap.offsetX, snap.offsetY, snap.placement, snap.size, activeTexture]);
+  }, [entry, snap.offsetX, snap.offsetY, cacheReady]);
 
-  // ── Per-frame: rebuild when dirty ────────────────────────────────────────
-  useFrame(() => {
-    // ── Hide everything if no texture ──
-    if (!activeTexture) {
-      if (meshRef.current)      meshRef.current.visible = false;
-      if (decalMeshRef.current) decalMeshRef.current.visible = false;
-      return;
-    }
+  // Local-space scale (snap.size is in world units; convert to mesh local units)
+  const localScale = useMemo(() => {
+    if (!entry) return 0.1;
+    return snap.size / entry.avgScale;
+  }, [entry, snap.size]);
 
-    // Wait until dirty AND setup cache has the required entry
-    // (do NOT consume dirty until we can actually process it)
-    if (!dirty.current) return;
-    const entry = setupCache.current[snap.placement];
-    if (!entry) return; // retry next frame
+  if (!activeTexture || !entry || !localPos) return null;
 
-    dirty.current = false; // consume only now
-
-    const {
-      hitMesh, localPos, localTangent, localBitangent, stepH, stepV,
-      fbWorldCenter, fbWorldNormal, wTangent, wBitangent,
-    } = entry;
-
-    // Compute local-space position with pad offset
-    const localWithOffset = localPos.clone()
-      .addScaledVector(localTangent,   snap.offsetX * stepH)
-      .addScaledVector(localBitangent, snap.offsetY * stepV);
-
-    // ── Try DecalGeometry (surface-conforming) ──
-    let decalOk = false;
-    const decalMesh = decalMeshRef.current;
-    const decalMat  = decalMatRef.current;
-
-    if (decalMesh && decalMat) {
-      try {
-        const worldPos = hitMesh.localToWorld(localWithOffset.clone());
-        const geo = new DecalGeometry(
-          hitMesh,
-          worldPos,
-          FACE_EULER[snap.placement] || new THREE.Euler(),
-          new THREE.Vector3(snap.size, snap.size, snap.size),
-        );
-
-        // Verify geometry is non-empty
-        if (geo.attributes.position && geo.attributes.position.count > 0) {
-          // Reparent to hit mesh if needed
-          if (currentParent.current !== hitMesh) {
-            if (currentParent.current) currentParent.current.remove(decalMesh);
-            hitMesh.add(decalMesh);
-            decalMesh.position.set(0, 0, 0);
-            decalMesh.rotation.set(0, 0, 0);
-            decalMesh.scale.set(1, 1, 1);
-            currentParent.current = hitMesh;
-          }
-
-          const oldGeo = decalMesh.geometry;
-          decalMesh.geometry = geo;
-          if (oldGeo && oldGeo !== geo) oldGeo.dispose();
-
-          decalMat.map = activeTexture;
-          decalMat.needsUpdate = true;
-          decalMesh.visible = true;
-          decalOk = true;
-        } else {
-          geo.dispose();
-        }
-      } catch (_) {
-        // DecalGeometry failed — fall through to flat-plane fallback
-      }
-    }
-
-    // Hide decal if it didn't work
-    if (!decalOk && decalMesh) decalMesh.visible = false;
-
-    // ── Flat-plane fallback (always works) ──
-    // Shown only when decal failed; kept up to date either way.
-    if (meshRef.current) {
-      // Compute world-space position for flat plane
-      const worldOffset = fbWorldCenter.clone()
-        .addScaledVector(wTangent,   snap.offsetX * stepH)
-        .addScaledVector(wBitangent, snap.offsetY * stepV);
-
-      // Normal offset tiny nudge
-      worldOffset.addScaledVector(fbWorldNormal, 0.003);
-
-      // Convert to modelGroupRef local space (Float-immune)
-      const localFb = modelGroupRef.current
-        ? modelGroupRef.current.worldToLocal(worldOffset.clone())
-        : worldOffset;
-
-      meshRef.current.position.copy(localFb);
-
-      // Orient plane to face the surface normal
-      _lk.copy(localFb).add(fbWorldNormal);
-      meshRef.current.lookAt(
-        modelGroupRef.current
-          ? modelGroupRef.current.worldToLocal(_lk.clone().add(meshRef.current.parent?.position || new THREE.Vector3()))
-          : _lk
-      );
-      // Simpler orientation: just use preset rotation
-      meshRef.current.rotation.set(
-        ...(FACE_EULER[snap.placement]
-          ? [FACE_EULER[snap.placement].x, FACE_EULER[snap.placement].y, FACE_EULER[snap.placement].z]
-          : [0, 0, 0])
-      );
-
-      meshRef.current.scale.setScalar(snap.size);
-      meshRef.current.visible = !decalOk; // show fallback only when decal failed
-    }
-  });
-
-  // Always render the fallback mesh (hidden by default); decal is imperative
-  return (
-    <mesh ref={meshRef} visible={false}>
-      <planeGeometry args={[1, 1]} />
+  // Portal the <Decal> INTO the hit mesh.
+  // createPortal renders the element as a child of entry.hitMesh in the
+  // Three.js scene graph. <Decal> from drei uses its parent mesh to build
+  // DecalGeometry — so the decal bakes perfectly onto that mesh's surface.
+  // Since <Decal> is a child of the hit mesh, it moves with Float for free.
+  return createPortal(
+    <Decal
+      position={localPos.toArray()}
+      rotation={entry.localRotation}
+      scale={localScale}
+    >
       <meshStandardMaterial
-        map={activeTexture || undefined}
+        map={activeTexture}
         transparent
-        alphaTest={0.005}
+        alphaTest={0.01}
         depthWrite={false}
         roughness={0.85}
         metalness={0}
         polygonOffset
-        polygonOffsetFactor={-2}
-        polygonOffsetUnits={-2}
+        polygonOffsetFactor={-4}
+        polygonOffsetUnits={-4}
       />
-    </mesh>
+    </Decal>,
+    entry.hitMesh
   );
 }

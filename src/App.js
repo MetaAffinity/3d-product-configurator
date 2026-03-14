@@ -18,6 +18,7 @@ function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showLogoText, setShowLogoText] = useState(false);
   const controls = useRef();
+  const modelGroupRef = useRef();
 
   // Get current model's state and config
   const state = modelStates[selectedModel];
@@ -69,13 +70,15 @@ function App() {
   const renderModel = () => {
     const ModelComponent = config.component;
     return (
-      <ModelComponent
-        castShadow
-        colors={state.colors}
-        options={state.options}
-        textures={state.textures}
-        updateCurrent={updateCurrent}
-      />
+      <group ref={modelGroupRef}>
+        <ModelComponent
+          castShadow
+          colors={state.colors}
+          options={state.options}
+          textures={state.textures}
+          updateCurrent={updateCurrent}
+        />
+      </group>
     );
   };
 
@@ -158,8 +161,8 @@ function App() {
         <Suspense fallback={<Loader />}>
           <Float speed={1} rotationIntensity={1} floatIntensity={1} floatingRange={[0, 0.3]}>
             {renderModel()}
-            <LogoTextOverlay modelName={selectedModel} />
           </Float>
+          <LogoTextOverlay modelGroupRef={modelGroupRef} />
         </Suspense>
         <OrbitControls ref={controls} maxDistance={5} minDistance={config.minDistance || 1.5} autoRotate={isRotating} autoRotateSpeed={4} />
       </Canvas>

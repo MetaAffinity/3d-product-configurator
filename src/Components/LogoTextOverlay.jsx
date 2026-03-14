@@ -1,32 +1,51 @@
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect, useRef, useState } from "react";
 import { useSnapshot } from "valtio";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { logoTextState } from "../config/logoTextState";
-import { modelConfig } from "../config/models";
 import { createTextTexture } from "../utils/createTextTexture";
 
-// Default placement positions per placement key [x, y, z] world units
-const DEFAULT_PLACEMENTS = {
-  front: { position: [0, 0.05, 0.10], rotation: [0, 0, 0] },
-  back:  { position: [0, 0.05, -0.10], rotation: [0, Math.PI, 0] },
-  left:  { position: [-0.10, 0.05, 0], rotation: [0, -Math.PI / 2, 0] },
-  right: { position: [0.10, 0.05, 0],  rotation: [0, Math.PI / 2, 0] },
-};
+const _box   = new THREE.Box3();
+const _center = new THREE.Vector3();
+const _size   = new THREE.Vector3();
 
-export default function LogoTextOverlay({ modelName }) {
+// Returns face position & rotation in world space based on model bounding box
+function getFaceTransform(box, placement, offsetX, offsetY) {
+  box.getCenter(_center);
+  box.getSize(_size);
+
+  const ox = offsetX * _size.x * 0.35;
+  const oy = offsetY * _size.y * 0.35;
+
+  switch (placement) {
+    case "back":
+      return {
+        pos: [_center.x + ox, _center.y + oy, box.min.z - 0.003],
+        rot: [0, Math.PI, 0],
+      };
+    case "left":
+      return {
+        pos: [box.min.x - 0.003, _center.y + oy, _center.z - ox],
+        rot: [0, -Math.PI / 2, 0],
+      };
+    case "right":
+      return {
+        pos: [box.max.x + 0.003, _center.y + oy, _center.z + ox],
+        rot: [0, Math.PI / 2, 0],
+      };
+    default: // front
+      return {
+        pos: [_center.x + ox, _center.y + oy, box.max.z + 0.003],
+        rot: [0, 0, 0],
+      };
+  }
+}
+
+export default function LogoTextOverlay({ modelGroupRef }) {
   const snap = useSnapshot(logoTextState);
-  const config = modelConfig[modelName];
-  const placements = config.decalPositions || DEFAULT_PLACEMENTS;
-  const pl = placements[snap.placement] || placements.front || DEFAULT_PLACEMENTS.front;
+  const meshRef = useRef();
 
-  // Adjust with user offset (each unit = 0.08 world units)
-  const pos = [
-    pl.position[0] + snap.offsetX * 0.08,
-    pl.position[1] + snap.offsetY * 0.08,
-    pl.position[2],
-  ];
-
-  // ── Text texture ────────────────────────────────────────────────────
+  // ── Text texture ─────────────────────────────────────────────────────
   const textCanvas = useMemo(() => {
     if (!snap.text.trim()) return null;
     return createTextTexture({
@@ -46,32 +65,42 @@ export default function LogoTextOverlay({ modelName }) {
     return tex;
   }, [textCanvas]);
 
-  // ── Logo texture ────────────────────────────────────────────────────
+  // ── Logo texture ──────────────────────────────────────────────────────
   const [logoTexture, setLogoTexture] = useState(null);
-
   useEffect(() => {
-    if (!snap.logo) {
-      setLogoTexture(null);
-      return;
-    }
-    const loader = new THREE.TextureLoader();
-    loader.load(snap.logo, (tex) => {
+    if (!snap.logo) { setLogoTexture(null); return; }
+    new THREE.TextureLoader().load(snap.logo, (tex) => {
       tex.needsUpdate = true;
       setLogoTexture(tex);
     });
   }, [snap.logo]);
 
-  // ── Which texture to show ───────────────────────────────────────────
+  // ── Active texture ────────────────────────────────────────────────────
   const activeTexture = snap.activeTab === "logo" ? logoTexture : textTexture;
+
+  // ── Follow model every frame (tracks Float animation) ────────────────
+  useFrame(() => {
+    if (!meshRef.current || !modelGroupRef?.current || !activeTexture) return;
+
+    _box.setFromObject(modelGroupRef.current);
+    if (_box.isEmpty()) return;
+
+    const { pos, rot } = getFaceTransform(_box, snap.placement, snap.offsetX, snap.offsetY);
+    meshRef.current.position.set(...pos);
+    meshRef.current.rotation.set(...rot);
+    meshRef.current.scale.setScalar(snap.size);
+    meshRef.current.visible = true;
+  });
+
   if (!activeTexture) return null;
 
   return (
-    <mesh position={pos} rotation={pl.rotation} scale={[snap.size, snap.size, snap.size]}>
+    <mesh ref={meshRef} visible={false}>
       <planeGeometry args={[1, 1]} />
       <meshBasicMaterial
         map={activeTexture}
         transparent
-        alphaTest={0.01}
+        alphaTest={0.005}
         depthWrite={false}
         side={THREE.DoubleSide}
       />

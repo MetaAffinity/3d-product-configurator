@@ -7,6 +7,7 @@ import Insect from "../Components/Insect";
 import Teapot from "../Components/Teapot";
 import Sneaker from "../Components/Sneaker";
 import PoloShirt from "../Components/PoloShirt";
+import HighNeckTshirt from "../Components/HighNeckTshirt";
 
 // ============================================================
 // MODEL CONFIGURATION
@@ -171,6 +172,56 @@ const modelConfig = {
       sleeves: [0.8, 1.3],
     },
   },
+  HighNeckTshirt: {
+    component: HighNeckTshirt,
+    cameraPosition: [0, 0.2, 2],
+    placements: {
+      chest:       { label: "Chest",        dir: "front", rayHeight: 0.35 },
+      back:        { label: "Back",         dir: "back",  rayHeight: 0.35 },
+      leftSleeve:  { label: "Left Sleeve",  dir: "left",  rayHeight: 0.5 },
+      rightSleeve: { label: "Right Sleeve", dir: "right", rayHeight: 0.5 },
+    },
+    colors: {
+      body: "#ffffff",
+    },
+    cameraAngles: {
+      body: [0, 1.2],
+    },
+    // Design presets — transparent overlay textures per part
+    designs: [
+      {
+        label: "Basic",
+        thumb: "/highneck-tshirt/thumbs/basic-tshirt.png",
+        textures: {},
+      },
+      {
+        label: "Double Lines",
+        thumb: "/highneck-tshirt/thumbs/double-lines.png",
+        textures: {
+          front: ["/highneck-tshirt/textures/double-lines/front_1.png"],
+          back:  ["/highneck-tshirt/textures/double-lines/back_1.png"],
+        },
+      },
+      {
+        label: "Tribal Lines",
+        thumb: "/highneck-tshirt/thumbs/trible-lines.png",
+        textures: {
+          front: ["/highneck-tshirt/textures/trible-lines/front_1.png"],
+          back:  ["/highneck-tshirt/textures/trible-lines/back_1.png"],
+        },
+      },
+      {
+        label: "Lines",
+        thumb: "/highneck-tshirt/thumbs/basic-tshirt.png",
+        textures: {
+          front:       ["/highneck-tshirt/textures/lines/front_1.png", "/highneck-tshirt/textures/lines/front_2.png"],
+          back:        ["/highneck-tshirt/textures/lines/back_1.png", "/highneck-tshirt/textures/lines/back_2.png"],
+          rightSleeve: ["/highneck-tshirt/textures/lines/right_1.png"],
+          leftSleeve:  ["/highneck-tshirt/textures/lines/left_1.png"],
+        },
+      },
+    ],
+  },
 };
 
 // Auto-generate proxy states from config
@@ -191,9 +242,15 @@ Object.keys(modelConfig).forEach((name) => {
     colors: { ...modelConfig[name].colors },
     options: optionDefaults,
     textures: textureDefaults,
+    design: modelConfig[name].designs ? 0 : null,
   });
 });
 
 export { modelConfig, modelStates };
 export const modelNames = Object.keys(modelConfig);
 export const defaultModel = modelNames[0];
+export function getDefaultPlacement(modelName) {
+  const cfg = modelConfig[modelName];
+  if (cfg?.placements) return Object.keys(cfg.placements)[0];
+  return "front";
+}

@@ -47,4 +47,14 @@ export const modelPatterns = {
       { src: "/poloshirt/patterns/design3.png" },
     ],
   },
+  HighNeckTshirt: {
+    // Same 5 seamless patterns apply to all body meshes (front/back/sleeves)
+    body: [
+      { src: "/highneck-tshirt/patterns/Brazilian.jpg", label: "Brazilian" },
+      { src: "/highneck-tshirt/patterns/Coffee-Break.jpg", label: "Coffee Break" },
+      { src: "/highneck-tshirt/patterns/fiesta-seamless.jpg", label: "Fiesta" },
+      { src: "/highneck-tshirt/patterns/Mexican-Skull.jpg", label: "Mexican Skull" },
+      { src: "/highneck-tshirt/patterns/sugar-skulls.jpg", label: "Sugar Skulls" },
+    ],
+  },
 };

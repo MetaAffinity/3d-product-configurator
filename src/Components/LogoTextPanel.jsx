@@ -15,7 +15,7 @@ const FONTS = [
   { label: "Anton",           value: "Anton" },
 ];
 
-const PLACEMENTS = ["front", "back", "left", "right"];
+const DEFAULT_PLACEMENTS = [["front", { label: "Front" }], ["back", { label: "Back" }]];
 
 export default function LogoTextPanel({ modelName }) {
   const snap = useSnapshot(logoTextState);
@@ -54,9 +54,9 @@ export default function LogoTextPanel({ modelName }) {
   const dotX = Math.max(2, Math.min(98, (snap.offsetX / PAD_RANGE + 0.5) * 100));
   const dotY = Math.max(2, Math.min(98, (-snap.offsetY / PAD_RANGE + 0.5) * 100));
   const config = modelConfig[modelName];
-  const availablePlacements = config.decalPositions
-    ? Object.keys(config.decalPositions)
-    : PLACEMENTS;
+  const placementEntries = config?.placements
+    ? Object.entries(config.placements)
+    : DEFAULT_PLACEMENTS;
 
   // ── Handlers ───────────────────────────────────────────────────────
   const handleLogoUpload = (e) => {
@@ -207,13 +207,13 @@ export default function LogoTextPanel({ modelName }) {
 
       <label className="logtext-label">Placement</label>
       <div className="logtext-placements">
-        {availablePlacements.map((p) => (
+        {placementEntries.map(([key, pc]) => (
           <button
-            key={p}
-            className={snap.placement === p ? "active" : ""}
-            onClick={() => (logoTextState.placement = p)}
+            key={key}
+            className={snap.placement === key ? "active" : ""}
+            onClick={() => (logoTextState.placement = key)}
           >
-            {p}
+            {pc.label}
           </button>
         ))}
       </div>

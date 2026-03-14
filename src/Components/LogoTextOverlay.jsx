@@ -8,10 +8,12 @@ import { createTextTexture } from "../utils/createTextTexture";
 import { modelConfig } from "../config/models";
 
 const FACE_DIR = {
-  front: new THREE.Vector3( 0,  0, -1),
-  back:  new THREE.Vector3( 0,  0,  1),
-  left:  new THREE.Vector3( 1,  0,  0),
-  right: new THREE.Vector3(-1,  0,  0),
+  front:  new THREE.Vector3( 0,  0, -1),
+  back:   new THREE.Vector3( 0,  0,  1),
+  left:   new THREE.Vector3( 1,  0,  0),
+  right:  new THREE.Vector3(-1,  0,  0),
+  top:    new THREE.Vector3( 0, -1,  0),
+  bottom: new THREE.Vector3( 0,  1,  0),
 };
 
 /**
@@ -63,23 +65,30 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
 
       const raycaster = new THREE.Raycaster();
       const cfg = modelConfig[modelName];
-      const placements = cfg?.decalPositions
-        ? Object.keys(cfg.decalPositions)
-        : Object.keys(FACE_DIR);
+      const placementsCfg = cfg?.placements || {
+        front: { dir: "front", rayHeight: 0.35 },
+        back:  { dir: "back",  rayHeight: 0.35 },
+      };
 
-      placements.forEach((p) => {
-        const dir = FACE_DIR[p];
+      Object.keys(placementsCfg).forEach((placementKey) => {
+        const pc = placementsCfg[placementKey];
+        const dir = FACE_DIR[pc.dir];
         if (!dir) return;
 
-        // Front/back: aim at 35% height (chest area, not collar)
         const origin = wCenter.clone();
-        const yChest = worldBox.min.y + wSize.y * 0.35;
         const margin = Math.max(wSize.x, wSize.y, wSize.z) * 0.5 + 0.3;
+        const rayY = worldBox.min.y + wSize.y * (pc.rayHeight ?? 0.5);
 
-        if      (p === "front") { origin.z = worldBox.max.z + margin; origin.y = yChest; }
-        else if (p === "back")  { origin.z = worldBox.min.z - margin; origin.y = yChest; }
-        else if (p === "left")  { origin.x = worldBox.min.x - margin; }
-        else if (p === "right") { origin.x = worldBox.max.x + margin; }
+        // Position ray origin outside the bbox on the correct face
+        switch (pc.dir) {
+          case "front":  origin.z = worldBox.max.z + margin; origin.y = rayY; break;
+          case "back":   origin.z = worldBox.min.z - margin; origin.y = rayY; break;
+          case "left":   origin.x = worldBox.min.x - margin; origin.y = rayY; break;
+          case "right":  origin.x = worldBox.max.x + margin; origin.y = rayY; break;
+          case "top":    origin.y = worldBox.max.y + margin; break;
+          case "bottom": origin.y = worldBox.min.y - margin; break;
+          default: break;
+        }
 
         raycaster.set(origin, dir);
         const hits = raycaster.intersectObjects(meshes, false);
@@ -100,10 +109,15 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
           );
           worldNormal = dir.clone().negate();
           worldHit    = wCenter.clone();
-          if      (p === "front") { worldHit.z = worldBox.max.z + 0.002; worldHit.y = yChest; }
-          else if (p === "back")  { worldHit.z = worldBox.min.z - 0.002; worldHit.y = yChest; }
-          else if (p === "left")  worldHit.x = worldBox.min.x - 0.002;
-          else if (p === "right") worldHit.x = worldBox.max.x + 0.002;
+          switch (pc.dir) {
+            case "front":  worldHit.z = worldBox.max.z + 0.002; worldHit.y = rayY; break;
+            case "back":   worldHit.z = worldBox.min.z - 0.002; worldHit.y = rayY; break;
+            case "left":   worldHit.x = worldBox.min.x - 0.002; break;
+            case "right":  worldHit.x = worldBox.max.x + 0.002; break;
+            case "top":    worldHit.y = worldBox.max.y + 0.002; break;
+            case "bottom": worldHit.y = worldBox.min.y - 0.002; break;
+            default: break;
+          }
         }
 
         // Convert to hit mesh LOCAL space (Float-immune)
@@ -136,12 +150,14 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
         const avgScale = (meshWorldScale.x + meshWorldScale.y + meshWorldScale.z) / 3;
 
         // Adaptive pad step in mesh local space units
-        const stepH = (p === "left" || p === "right")
+        const stepH = (pc.dir === "left" || pc.dir === "right")
           ? (wSize.z / avgScale) * 0.1
           : (wSize.x / avgScale) * 0.1;
-        const stepV = (wSize.y / avgScale) * 0.1;
+        const stepV = (pc.dir === "top" || pc.dir === "bottom")
+          ? (wSize.z / avgScale) * 0.1
+          : (wSize.y / avgScale) * 0.1;
 
-        setupCache.current[p] = {
+        setupCache.current[placementKey] = {
           hitMesh, localPos, localTangent, localBitangent,
           localRotation, avgScale, stepH, stepV,
         };

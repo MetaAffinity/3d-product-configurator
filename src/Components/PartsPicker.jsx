@@ -7,6 +7,7 @@ export default function PartsPicker({ state, updateCurrent, modelName }) {
   const optionsConfig = modelConfig[modelName]?.options;
   const designsConfig = modelConfig[modelName]?.designs;
   const DESIGN_COLORS = ["#000000", "#ffffff", "#c0392b", "#2980b9", "#27ae60", "#f39c12", "#8e44ad", "#e74c3c"];
+  const ENABLE_CUSTOM_DESIGN_COLOR = true;
   // Hide parts that have a toggle option and it's off
   const parts = Object.keys(snap.colors).filter(
     (part) => !optionsConfig?.[part] || snap.options[part]
@@ -43,13 +44,17 @@ export default function PartsPicker({ state, updateCurrent, modelName }) {
                     onClick={() => { state.designColor = color; }}
                   />
                 ))}
-                <input
-                  type="color"
-                  value={snap.designColor || "#000000"}
-                  onChange={(e) => { state.designColor = e.target.value; }}
-                  className="design-color-custom"
-                  title="Custom color"
-                />
+                {ENABLE_CUSTOM_DESIGN_COLOR && (
+                  <label className="design-color-more" title="Pick any color">
+                    <span className="design-color-more-icon">+</span>
+                    <input
+                      type="color"
+                      value={snap.designColor || "#000000"}
+                      onChange={(e) => { state.designColor = e.target.value; }}
+                      className="design-color-hidden-input"
+                    />
+                  </label>
+                )}
               </div>
             </div>
           )}

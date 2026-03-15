@@ -473,6 +473,17 @@ useEffect(() => {
 
 The PartsPicker automatically shows design thumbnails and color picker when `designs` is configured. No UI changes needed.
 
+### Enable / Disable custom color picker for designs
+
+In `src/Components/PartsPicker.jsx`, there is a flag at the top of the component:
+
+```js
+const ENABLE_CUSTOM_DESIGN_COLOR = true;  // show rainbow "+" button for any color
+const ENABLE_CUSTOM_DESIGN_COLOR = false; // hide it — only preset swatches available
+```
+
+When enabled, a rainbow circle button with "+" appears after the preset color swatches. Clicking it opens the browser's native color picker for full color freedom.
+
 ---
 
 ## How to Add Toggle Options (Show/Hide Parts)

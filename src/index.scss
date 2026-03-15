@@ -126,7 +126,22 @@ code {
   flex-direction: column;
   justify-content: space-around;
 
-  div {
+  .model-item {
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+
+    &.active {
+      border-color: #333;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
     h4 {
       text-align: center;
       margin: 0;
@@ -136,10 +151,6 @@ code {
       max-width: 100px;
       object-fit: contain;
     }
-  }
-
-  div:hover {
-    cursor: pointer;
   }
 }
 
@@ -373,8 +384,8 @@ code {
 // ── Logo / Text toggle button (floating above toolbar) ───────────────
 .logtext-toggle-btn {
   position: absolute;
-  bottom: calc(5% + 64px);
-  left: 5%;
+  top: 16px;
+  left: 16px;
   z-index: 10;
   display: flex;
   align-items: center;
@@ -405,8 +416,8 @@ code {
 // ── Logo / Text panel ─────────────────────────────────────────────────
 .logtext-panel {
   position: absolute;
-  bottom: calc(5% + 108px);
-  left: 5%;
+  top: 56px;
+  left: 16px;
   z-index: 10;
   max-height: 75vh;
   overflow-y: auto;
@@ -807,12 +818,37 @@ code {
   &.active { border-color: #333; transform: scale(1.15); }
 }
 
-.design-color-custom {
+.design-color-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 24px;
   height: 24px;
-  border: 1.5px solid rgba(0, 0, 0, 0.2);
   border-radius: 50%;
   cursor: pointer;
-  padding: 0;
-  background: none;
+  position: relative;
+  background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+
+  &:hover { transform: scale(1.15); }
+
+  .design-color-more-icon {
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .design-color-hidden-input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+  }
 }

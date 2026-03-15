@@ -138,7 +138,7 @@ function App() {
 
   return (
     <>
-      <ModelPicker updateSelectedModel={handleModelChange} />
+      <ModelPicker updateSelectedModel={handleModelChange} selectedModel={selectedModel} />
       <ColorPicker state={state} updateColor={updateColor} updateTexture={updateTexture} modelName={selectedModel} />
       <PartsPicker state={state} updateCurrent={handlePartSelect} modelName={selectedModel} />
       {showLogoText && <LogoTextPanel modelName={selectedModel} />}

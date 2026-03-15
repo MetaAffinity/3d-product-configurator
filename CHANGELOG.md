@@ -6,6 +6,23 @@ For full developer instructions (how to add models, patterns, options), see **[D
 
 ---
 
+## [v1.2.3.3] - 2026-03-16
+
+### Added
+- **Selected model highlight** — Active model in model picker now shows a dark border and subtle background, making it clear which model is selected.
+- **Custom color picker redesigned** — Design color "custom color" input replaced with a rainbow circle button with "+" icon. Much clearer that it opens a full color picker. Controlled by `ENABLE_CUSTOM_DESIGN_COLOR` flag in PartsPicker.jsx.
+
+### Changed
+- **Logo/Text panel moved to top-left** — Toggle button and panel relocated from bottom-left to top-left corner, freeing bottom area for future price module and custom options panel.
+
+### Technical
+- `src/Components/ModelPicker.jsx` — Accepts `selectedModel` prop, applies `.model-item.active` class.
+- `src/App.js` — Passes `selectedModel` to ModelPicker.
+- `src/Components/PartsPicker.jsx` — `ENABLE_CUSTOM_DESIGN_COLOR` flag controls custom color picker visibility. Rainbow button with hidden color input.
+- `src/index.scss` — `.model-item.active` styles, `.design-color-more` rainbow button, logtext panel/button repositioned to top-left.
+
+---
+
 ## [v1.2.3.2] - 2026-03-15
 
 ### Added

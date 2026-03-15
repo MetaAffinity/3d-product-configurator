@@ -32,7 +32,11 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - **Default body color too white** — Changed from #ffffff → #999999 (visible grey that doesn't blend with #ececed page background).
 - **Text/logo too small on HighNeckTshirt** — Model scale of 3.0 made default decal size (0.12) tiny. Increased default size to 0.8, slider max from 0.6 to 4.0.
 - **Logo/text not appearing on sleeves** — Raycast fallback for left/right placements was missing Y-coordinate (`worldHit.y = rayY`). Also increased sleeve `rayHeight` from 0.5 to 0.72 (shoulder level). Filtered out `isDesignOverlay` meshes from raycast to prevent interception.
-- **Text/logo rendering behind design overlays** — Decals had no `renderOrder`, so design overlays (renderOrder=1) rendered on top. Added `renderOrder={2}` and `depthTest={false}` to decals so they always appear above design lines.
+- **Text/logo rendering behind design overlays** — Decals had no `renderOrder`, so design overlays (renderOrder=1) rendered on top. Fixed with `renderOrder=10` + `depthTest=false` on decals, and `depthWrite=true` + `renderOrder=0` on design overlays.
+- **Text clipping on curved surfaces** — Decal projection depth was too thin (×0.15) for curved shirt mesh, causing severe text clipping. Increased to ×0.8 for proper surface coverage.
+- **Text canvas too small** — Canvas 512→1024px, removed 96px font cap, auto-sizes font based on text length (70% of inner area for 1-2 chars). Padding increased 15%→20%.
+- **Decal transparent area visible** — `alphaTest` increased from 0.01 to 0.5 so only actual text/logo pixels render, transparent padding discarded.
+- **Bold/Curved toggles disappearing** — `resetEditor()` was resetting `activeTab` to "logo" after placing text, hiding text controls. Now preserves current tab.
 
 ### Technical
 - `src/Components/HighNeckTshirt.js` — New model component using `scene.clone(true)` + `<primitive>` rendering. `forEachMaterial` helper for array material handling. Imperative TextureLoader for patterns and design overlays. Design overlay: clone geometry → flip UV Y (`×-1`) → MeshBasicMaterial with transparent + designColor.

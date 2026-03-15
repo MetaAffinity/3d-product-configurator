@@ -263,7 +263,7 @@ function DecalItem({ overlay, cache }) {
       }}
       position={localPos.toArray()}
       rotation={localRotation}
-      scale={[localScale, localScale, localScale * 0.15]}
+      scale={[localScale, localScale, localScale * 0.8]}
     >
       <meshStandardMaterial
         map={activeTexture}

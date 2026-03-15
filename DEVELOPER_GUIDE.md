@@ -540,7 +540,35 @@ MyModel: {
 }
 ```
 
-Camera angles per part (for auto-rotation when clicking a part in the panel):
+### How to make a model appear bigger or smaller on screen
+
+There are **two ways** to control the model's apparent size:
+
+**1. Camera position (recommended)** — controls how far the camera is from the model when it loads.
+
+In `src/config/models.js`, set `cameraPosition: [x, y, z]`:
+```js
+cameraPosition: [0, 0, 2],    // default — camera at z=2 (normal distance)
+cameraPosition: [0, 0, 1.5],  // closer camera — model appears bigger
+cameraPosition: [0, 0, 3],    // farther camera — model appears smaller
+```
+
+- The **Z value** (3rd number) controls the distance: **smaller Z = closer = model looks bigger**
+- The **Y value** (2nd number) controls height: positive = camera looks slightly down
+
+**2. Group scale in component** — physically changes the model size in 3D space.
+
+In the model's component file (e.g. `Hoodie.js`), change the `<group>` scale:
+```jsx
+<group scale={[0.75, 0.75, 0.75]} position={[0, 0.1, 0]}>  // smaller
+<group scale={[1.3, 1.3, 1.3]} position={[0, -0.2, 0]}>     // bigger
+```
+
+**Tip:** Prefer `cameraPosition` for minor size adjustments. Use `scale` only when the GLB model is inherently too large or too small (e.g. bounding box < 0.5 or > 3 units).
+
+### Camera angles per part
+
+Auto-rotation when clicking a part in the parts panel:
 ```js
 cameraAngles: {
   partName: [azimuthalAngle, polarAngle], // radians

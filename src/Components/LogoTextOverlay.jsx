@@ -268,7 +268,7 @@ function DecalItem({ overlay, cache }) {
       <meshStandardMaterial
         map={activeTexture}
         transparent
-        alphaTest={0.01}
+        alphaTest={0.5}
         depthWrite={false}
         depthTest={false}
         roughness={0.85}

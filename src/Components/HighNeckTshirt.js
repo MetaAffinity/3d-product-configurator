@@ -153,13 +153,13 @@ export default function HighNeckTshirt({ colors, options, textures, design, desi
                 map: tex,
                 transparent: true,
                 color: 0x000000,
-                depthWrite: false,
+                depthWrite: true,
                 polygonOffset: true,
                 polygonOffsetFactor: -1,
               });
               const overlay = new THREE.Mesh(geom, mat);
               overlay.userData.isDesignOverlay = true;
-              overlay.renderOrder = 1;
+              overlay.renderOrder = 0;
               child.add(overlay);
               overlayRef.current.push(overlay);
             });

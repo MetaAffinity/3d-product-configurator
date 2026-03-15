@@ -36,8 +36,8 @@ export default function Hoodie({ colors, options, textures, updateCurrent }) {
   return (
     <group
       dispose={null}
-      scale={[1.3, 1.3, 1.3]}
-      position={[0, -0.2, 0]}
+      scale={[0.75, 0.75, 0.75]}
+      position={[0, 0.1, 0]}
       onPointerOver={(e) => { e.stopPropagation(); setHovered(e.object.material.name); }}
       onPointerOut={(e) => { if (e.intersections.length === 0) setHovered(null); }}
       onPointerDown={(e) => { e.stopPropagation(); updateCurrent(e.object.material.name); }}

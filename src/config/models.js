@@ -225,7 +225,7 @@ const modelConfig = {
   },
   Hoodie: {
     component: Hoodie,
-    cameraPosition: [0, 0.2, 2.5],
+    cameraPosition: [0, 0, 2],
     placements: {
       chest:  { label: "Chest",  dir: "front", rayHeight: 0.45 },
       back:   { label: "Back",   dir: "back",  rayHeight: 0.45 },

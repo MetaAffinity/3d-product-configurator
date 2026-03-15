@@ -203,38 +203,6 @@ export default function LogoTextPanel({ modelName }) {
             />
           </div>
 
-          <div className="logtext-toggles">
-            <label className="logtext-toggle-item">
-              <span>Bold</span>
-              <div
-                className={`toggle-switch ${snap.bold ? "on" : ""}`}
-                onClick={() => (logoTextState.bold = !snap.bold)}
-              >
-                <div className="toggle-knob" />
-              </div>
-            </label>
-            <label className="logtext-toggle-item">
-              <span>Curved</span>
-              <div
-                className={`toggle-switch ${snap.curved ? "on" : ""}`}
-                onClick={() => (logoTextState.curved = !snap.curved)}
-              >
-                <div className="toggle-knob" />
-              </div>
-            </label>
-            {snap.curved && (
-              <label className="logtext-toggle-item">
-                <span>Arch Up</span>
-                <div
-                  className={`toggle-switch ${snap.curveUp ? "on" : ""}`}
-                  onClick={() => (logoTextState.curveUp = !snap.curveUp)}
-                >
-                  <div className="toggle-knob" />
-                </div>
-              </label>
-            )}
-          </div>
-
           {snap.text && (
             <button
               className="logtext-clear"

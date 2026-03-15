@@ -6,6 +6,7 @@ import insect from "../img/insect.png";
 import teapot from "../img/teapot.png";
 import sneaker from "../img/sneaker.png";
 import poloshirt from "../img/demo.png";
+import hoodie from "../img/hoodie.png";
 
 const ModelPicker = ({ updateSelectedModel }) => {
   return (
@@ -44,7 +45,7 @@ const ModelPicker = ({ updateSelectedModel }) => {
           <h4>HighNeck</h4>
         </div>
         <div onClick={() => updateSelectedModel("Hoodie")}>
-          <div style={{ width: 80, height: 60, background: "#999", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>H</div>
+          <img src={hoodie} alt="hoodie" />
           <h4>Hoodie</h4>
         </div>
       </div>

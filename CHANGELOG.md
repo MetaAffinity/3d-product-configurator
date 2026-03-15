@@ -12,13 +12,20 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - **Hoodie model** — New hoodie GLB model with 6 colorable parts: body, hood, drawstring, bottom band, cuffs, pocket. Zipper hardware retains original metallic material.
 - **Hoodie color swatches** — 11 colors for body/hood, 8 for drawstring/bottom/cuff/pocket.
 - **Hoodie placements** — 4 logo/text placements: Chest, Back, Hood, Pocket.
-- **Hoodie in model picker** — Placeholder thumbnail added to model selector bar.
+- **Hoodie in model picker** — Thumbnail image added to model selector bar.
+- **Developer Guide: default color docs** — New section explaining how to change a model's initial appearance color on load via `colors` in `models.js`.
+
+### Fixed
+- **Hoodie model too big** — Reduced scale from 1.3 to 0.75 and centered position.
+- **Hoodie default color tinted** — GLB has baked textures; initial color #999999 was tinting them dark red. Adjusted through iterations to #d0d0d0 (natural light grey that preserves original fabric look).
+- **Bold/Curved toggles removed** — Removed from text panel (carried from v1.2.3.1).
 
 ### Technical
-- `src/Components/Hoodie.js` — New model component using `useGLTF`. 6 cloned materials for independent part coloring. Scale 1.3, centered position.
-- `src/config/models.js` — Hoodie config with placements, colors, cameraAngles.
+- `src/Components/Hoodie.js` — Model component using `useGLTF`. 6 cloned materials for independent part coloring. Scale 0.75, position [0, 0.1, 0].
+- `src/config/models.js` — Hoodie config with placements, colors (#d0d0d0 default), cameraAngles.
 - `src/config/swatches.js` — Hoodie color swatches per part.
-- `src/Components/ModelPicker.jsx` — Hoodie entry added.
+- `src/Components/ModelPicker.jsx` — Hoodie entry with thumbnail image.
+- `DEVELOPER_GUIDE.md` — New "Default color on load" section in Step 3 (Register in models.js).
 
 ---
 

@@ -38,6 +38,9 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - **Decal transparent area visible** — `alphaTest` increased from 0.01 to 0.5 so only actual text/logo pixels render, transparent padding discarded.
 - **Bold/Curved toggles disappearing** — `resetEditor()` was resetting `activeTab` to "logo" after placing text, hiding text controls. Now preserves current tab.
 
+### Removed
+- **Bold, Curved, Arch Up toggles** — Removed from text panel as they were not functioning reliably with the Decal rendering pipeline.
+
 ### Technical
 - `src/Components/HighNeckTshirt.js` — New model component using `scene.clone(true)` + `<primitive>` rendering. `forEachMaterial` helper for array material handling. Imperative TextureLoader for patterns and design overlays. Design overlay: clone geometry → flip UV Y (`×-1`) → MeshBasicMaterial with transparent + designColor.
 - `src/config/models.js` — HighNeckTshirt config with placements, designs array (4 presets with per-part texture paths), `designColor` state field.

@@ -233,11 +233,11 @@ const modelConfig = {
       pocket: { label: "Pocket", dir: "front", rayHeight: 0.15 },
     },
     colors: {
-      body:       "#e8e8e8",
-      hood:       "#e8e8e8",
+      body:       "#d0d0d0",
+      hood:       "#d0d0d0",
       drawstring: "#e8e8e8",
       bottom:     "#e8e8e8",
-      cuff:       "#e8e8e8",
+      cuff:       "#d0d0d0",
       pocket:     "#e8e8e8",
     },
     cameraAngles: {

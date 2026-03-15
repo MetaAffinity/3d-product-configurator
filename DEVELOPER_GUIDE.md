@@ -27,6 +27,7 @@ src/
     Sneaker.js                  — Sneaker model component (has toggle options)
     PoloShirt.js                — PoloShirt model component (has texture patterns)
     HighNeckTshirt.js           — HighNeck T-Shirt component (designs + patterns)
+    Hoodie.js                   — Hoodie component (6 colorable parts + zipper)
     LogoTextPanel.jsx           — Logo/text editor panel (multi-overlay)
     LogoTextOverlay.jsx         — 3D decal renderer (multiple items)
     ModelPicker.jsx             — Top bar model selector thumbnails

@@ -43,6 +43,10 @@ const ModelPicker = ({ updateSelectedModel }) => {
           <img src="/highneck-tshirt/thumbs/basic-tshirt.png" alt="highneck" style={{ maxWidth: 80 }} />
           <h4>HighNeck</h4>
         </div>
+        <div onClick={() => updateSelectedModel("Hoodie")}>
+          <div style={{ width: 80, height: 60, background: "#999", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>H</div>
+          <h4>Hoodie</h4>
+        </div>
       </div>
     </>
   );

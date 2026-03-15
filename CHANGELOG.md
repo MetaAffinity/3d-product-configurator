@@ -6,6 +6,22 @@ For full developer instructions (how to add models, patterns, options), see **[D
 
 ---
 
+## [v1.2.3.2] - 2026-03-15
+
+### Added
+- **Hoodie model** — New hoodie GLB model with 6 colorable parts: body, hood, drawstring, bottom band, cuffs, pocket. Zipper hardware retains original metallic material.
+- **Hoodie color swatches** — 11 colors for body/hood, 8 for drawstring/bottom/cuff/pocket.
+- **Hoodie placements** — 4 logo/text placements: Chest, Back, Hood, Pocket.
+- **Hoodie in model picker** — Placeholder thumbnail added to model selector bar.
+
+### Technical
+- `src/Components/Hoodie.js` — New model component using `useGLTF`. 6 cloned materials for independent part coloring. Scale 1.3, centered position.
+- `src/config/models.js` — Hoodie config with placements, colors, cameraAngles.
+- `src/config/swatches.js` — Hoodie color swatches per part.
+- `src/Components/ModelPicker.jsx` — Hoodie entry added.
+
+---
+
 ## [v1.2.3.1] - 2026-03-15
 
 ### Added

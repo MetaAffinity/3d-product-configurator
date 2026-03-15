@@ -8,6 +8,7 @@ import Teapot from "../Components/Teapot";
 import Sneaker from "../Components/Sneaker";
 import PoloShirt from "../Components/PoloShirt";
 import HighNeckTshirt from "../Components/HighNeckTshirt";
+import Hoodie from "../Components/Hoodie";
 
 // ============================================================
 // MODEL CONFIGURATION
@@ -221,6 +222,32 @@ const modelConfig = {
         },
       },
     ],
+  },
+  Hoodie: {
+    component: Hoodie,
+    cameraPosition: [0, 0.2, 2.5],
+    placements: {
+      chest:  { label: "Chest",  dir: "front", rayHeight: 0.45 },
+      back:   { label: "Back",   dir: "back",  rayHeight: 0.45 },
+      hood:   { label: "Hood",   dir: "front", rayHeight: 0.85 },
+      pocket: { label: "Pocket", dir: "front", rayHeight: 0.15 },
+    },
+    colors: {
+      body:       "#999999",
+      hood:       "#999999",
+      drawstring: "#cccccc",
+      bottom:     "#999999",
+      cuff:       "#999999",
+      pocket:     "#999999",
+    },
+    cameraAngles: {
+      body:       [0, 1.2],
+      hood:       [0, 0.8],
+      drawstring: [0, 0.9],
+      bottom:     [0, 1.8],
+      cuff:       [0.8, 1.5],
+      pocket:     [0, 1.4],
+    },
   },
 };
 

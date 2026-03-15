@@ -3,7 +3,7 @@
  * Returns the canvas element (caller converts to THREE.CanvasTexture).
  */
 export function createTextTexture({ text, font, textColor, bold, curved, curveUp }) {
-  const size = 512;
+  const size = 1024;
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
@@ -12,18 +12,33 @@ export function createTextTexture({ text, font, textColor, bold, curved, curveUp
   ctx.clearRect(0, 0, size, size);
 
   const weight = bold ? "bold" : "normal";
-  const fontSize = Math.max(32, Math.floor(size / Math.max(text.length, 1) * 1.1));
-  const clampedSize = Math.min(fontSize, 96);
-  ctx.font = `${weight} ${clampedSize}px "${font}", sans-serif`;
+
+  // 20% padding each side keeps content away from DecalGeometry edges
+  const pad = size * 0.2;
+  const inner = size - pad * 2; // usable content area
+
+  // Auto-size font to fill inner area based on text length
+  let fontSize;
+  if (text.length <= 2) {
+    fontSize = inner * 0.7; // big for 1-2 chars
+  } else if (text.length <= 5) {
+    fontSize = inner * 0.35;
+  } else {
+    fontSize = Math.max(40, Math.floor(inner / text.length * 1.8));
+  }
+
+  ctx.font = `${weight} ${fontSize}px "${font}", sans-serif`;
+
+  // Shrink font if text is wider than inner area (single line)
+  const measured = ctx.measureText(text);
+  if (measured.width > inner && !curved) {
+    fontSize = fontSize * (inner / measured.width) * 0.95;
+    ctx.font = `${weight} ${fontSize}px "${font}", sans-serif`;
+  }
+
   ctx.fillStyle = textColor;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-
-  // Content is drawn in the inner 70% of the canvas (15% padding each side).
-  // This keeps text/curves away from the DecalGeometry box edges so nothing
-  // gets clipped on curved surfaces.
-  const pad = size * 0.15; // 15% padding on each side
-  const inner = size - pad * 2; // usable content area
 
   if (curved && text.length > 0) {
     // Draw each character along an arc — scaled to fit within inner area
@@ -64,7 +79,7 @@ export function createTextTexture({ text, font, textColor, bold, curved, curveUp
     }
     if (current) lines.push(current);
 
-    const lineH = clampedSize * 1.25;
+    const lineH = fontSize * 1.25;
     const startY = size / 2 - ((lines.length - 1) * lineH) / 2;
     lines.forEach((line, i) => {
       ctx.fillText(line, size / 2, startY + i * lineH, maxWidth);

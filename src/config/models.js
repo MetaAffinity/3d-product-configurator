@@ -119,6 +119,7 @@ const modelConfig = {
   },
   Sneaker: {
     component: Sneaker,
+    cameraPosition: [0, 0, 1.5],
     minDistance: 0.5,
     placements: {
       front: { label: "Front", dir: "front", rayHeight: 0.35 },

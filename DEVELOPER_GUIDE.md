@@ -170,6 +170,22 @@ MyModel: {
 },
 ```
 
+**Default color on load (initial appearance):**
+
+The `colors` object controls how the model looks when it first loads on screen. These colors multiply with the GLB texture:
+- `"#ffffff"` (white) = no tinting, shows original GLB texture as-is
+- `"#e8e8e8"` / `"#d0d0d0"` = subtle grey tint for a natural fabric look
+- Any color = tints the texture with that color
+
+To change a model's initial appearance, edit the `colors` values in `src/config/models.js`. For example, to make the Hoodie body darker on load:
+```js
+colors: {
+  body: "#d0d0d0",  // light grey — change this hex to adjust darkness
+}
+```
+
+**Tip:** If the model looks too white or washed out, darken the hex. If it looks tinted/colored, move closer to `#ffffff`.
+
 **Rules:**
 - Key name (e.g. `MyModel`) must be **unique** and **exactly match** what you use elsewhere (case-sensitive)
 - Color keys must match the `name` set on cloned materials in your component

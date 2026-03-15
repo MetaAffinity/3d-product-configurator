@@ -424,11 +424,11 @@ useEffect(() => {
           loader.load(texPath, (tex) => {
             const mat = new THREE.MeshBasicMaterial({
               map: tex, transparent: true, color: 0x000000,
-              depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1,
+              depthWrite: true, polygonOffset: true, polygonOffsetFactor: -1,
             });
             const overlay = new THREE.Mesh(geom, mat);
             overlay.userData.isDesignOverlay = true;
-            overlay.renderOrder = 1;
+            overlay.renderOrder = 0;
             child.add(overlay);
             overlayRef.current.push(overlay);
           });
@@ -534,29 +534,35 @@ cameraAngles: {
 
 ---
 
-## Logo / Text Overlay
+## Logo / Text Overlay (Multi-Overlay)
 
-The Logo/Text feature places a flat plane with the user's logo or text in front of the 3D model.
+The Logo/Text feature uses `<Decal>` from drei to project logo/text onto the 3D model surface. Users can place **multiple** overlays simultaneously.
 
-### Per-model placement positions
+### How it works
 
-Add `decalPositions` to any model in `models.js` to define where the overlay appears for each placement preset:
+1. On model load, `LogoTextOverlay.jsx` raycasts from each placement direction to find the surface mesh and hit point
+2. Each overlay is rendered as an independent `<Decal>` via `DecalItem` sub-component, portaled into the hit mesh
+3. Decals use `renderOrder=10` + `depthTest=false` to render above design overlays
+4. Text is rendered to a 1024×1024 canvas via `createTextTexture.js`, then used as a `CanvasTexture`
+
+### Per-model placements
+
+Placements are defined in `models.js` under the `placements` field (same field used for raycast targeting):
 
 ```js
 MyModel: {
-  decalPositions: {
-    front: { position: [0, 0.05, 0.10], rotation: [0, 0, 0] },
-    back:  { position: [0, 0.05, -0.10], rotation: [0, Math.PI, 0] },
-    left:  { position: [-0.10, 0.05, 0], rotation: [0, -Math.PI / 2, 0] },
-    right: { position: [0.10, 0.05, 0],  rotation: [0, Math.PI / 2, 0] },
+  placements: {
+    chest:       { label: "Chest",        dir: "front", rayHeight: 0.35 },
+    back:        { label: "Back",         dir: "back",  rayHeight: 0.35 },
+    leftSleeve:  { label: "Left Sleeve",  dir: "left",  rayHeight: 0.72 },
+    rightSleeve: { label: "Right Sleeve", dir: "right", rayHeight: 0.72 },
   },
 }
 ```
 
-- Positions are in **world space** (scene units)
-- You only need to define the presets you want — e.g. just `front` and `back`
-- If `decalPositions` is omitted entirely, the overlay still works using built-in fallback positions
-- The user can fine-tune position with Offset X / Y sliders and Size slider in the panel
+- `dir` — raycast direction: front, back, left, right, top, bottom
+- `rayHeight` — vertical position as fraction of model height (0 = bottom, 1 = top). For sleeves, use ~0.7 (shoulder level)
+- The UI auto-generates placement buttons from this config
 
 ### Adding new fonts
 
@@ -573,14 +579,23 @@ The font must be loaded in the browser before canvas can use it. Add Google Font
 <link href="https://fonts.googleapis.com/css2?family=My+Font&display=swap" rel="stylesheet" />
 ```
 
+### Multi-overlay state
+
+The `logoTextState.js` manages an `items[]` array for placed overlays:
+
+- **Place on Model** — saves current editor content as a new item in the array
+- **Edit** — click a placed item to load it back into the editor for live editing
+- **Delete** — remove individual items
+- **Per-model save/restore** — items are saved/restored when switching models via deep copy
+
 ### Key files
 
 | File | Purpose |
 |------|---------|
-| `src/config/logoTextState.js` | Valtio proxy — all logo/text state |
-| `src/utils/createTextTexture.js` | Canvas text renderer (straight + curved) |
-| `src/Components/LogoTextPanel.jsx` | UI panel |
-| `src/Components/LogoTextOverlay.jsx` | 3D plane mesh rendered in Canvas |
+| `src/config/logoTextState.js` | Valtio proxy — items array, editor fields, per-model save/restore |
+| `src/utils/createTextTexture.js` | Canvas text renderer (1024px, auto-sized font, straight + curved) |
+| `src/Components/LogoTextPanel.jsx` | UI panel (tabs, placement, size 0.02–4.0, rotation, pad, items list) |
+| `src/Components/LogoTextOverlay.jsx` | 3D decal renderer — DecalItem sub-component, raycast setup, renderOrder=10 |
 | `public/index.html` | Google Fonts `<link>` tags |
 
 ---

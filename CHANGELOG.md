@@ -29,7 +29,10 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - **Design overlays invisible** — Overlay textures are white lines on transparent background; needed `color: 0x000000` on the MeshBasicMaterial to tint them visible. Added `depthWrite: false`, `polygonOffset`, and `renderOrder: 1` to prevent z-fighting.
 - **Design overlays fading on body color change** — Body color effect was traversing all meshes including overlay children, overriding their material color. Added `userData.isDesignOverlay` check to skip overlays.
 - **Design selection not reactive** — `design` prop was passed as a static number from App.js proxy without `useSnapshot`. Added `useSnapshot(state)` in App.js so design changes trigger re-renders.
-- **Default body color too white** — Changed from #ffffff → #b8b8b8 (visible grey that doesn't blend with #ececed page background).
+- **Default body color too white** — Changed from #ffffff → #999999 (visible grey that doesn't blend with #ececed page background).
+- **Text/logo too small on HighNeckTshirt** — Model scale of 3.0 made default decal size (0.12) tiny. Increased default size to 0.8, slider max from 0.6 to 4.0.
+- **Logo/text not appearing on sleeves** — Raycast fallback for left/right placements was missing Y-coordinate (`worldHit.y = rayY`). Also increased sleeve `rayHeight` from 0.5 to 0.72 (shoulder level). Filtered out `isDesignOverlay` meshes from raycast to prevent interception.
+- **Text/logo rendering behind design overlays** — Decals had no `renderOrder`, so design overlays (renderOrder=1) rendered on top. Added `renderOrder={2}` and `depthTest={false}` to decals so they always appear above design lines.
 
 ### Technical
 - `src/Components/HighNeckTshirt.js` — New model component using `scene.clone(true)` + `<primitive>` rendering. `forEachMaterial` helper for array material handling. Imperative TextureLoader for patterns and design overlays. Design overlay: clone geometry → flip UV Y (`×-1`) → MeshBasicMaterial with transparent + designColor.
@@ -37,8 +40,8 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - `src/config/patterns.js` — HighNeckTshirt body patterns (5 seamless JPGs).
 - `src/config/swatches.js` — HighNeckTshirt body color swatches (11 colors).
 - `src/config/logoTextState.js` — Restructured for multi-overlay: `items[]` array, `editingId`, helper functions (`placeItem`, `editItem`, `removeItem`, `cancelEditing`, `resetEditor`). Per-model save/restore includes items via deep copy.
-- `src/Components/LogoTextOverlay.jsx` — Refactored to render all items from array + live preview. Split into `DecalItem` sub-component with independent texture loading per item.
-- `src/Components/LogoTextPanel.jsx` — Placed items list UI, Place/Save/Cancel/Delete buttons, editing badge indicator.
+- `src/Components/LogoTextOverlay.jsx` — Refactored to render all items from array + live preview. Split into `DecalItem` sub-component with independent texture loading per item. Decals use `renderOrder: 2` + `depthTest: false` to render above design overlays. Raycast filters out `isDesignOverlay` meshes. Fallback left/right Y-coordinate fix.
+- `src/Components/LogoTextPanel.jsx` — Placed items list UI, Place/Save/Cancel/Delete buttons, editing badge indicator. Size slider range 0.02–4.0, default 0.8.
 - `src/Components/PartsPicker.jsx` — Design selection grid + design color picker with swatches.
 - `src/App.js` — `useSnapshot(state)` for reactive design/designColor props.
 

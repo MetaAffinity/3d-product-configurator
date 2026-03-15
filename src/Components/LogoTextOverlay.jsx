@@ -152,6 +152,23 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
 
   if (!cacheReady) return null;
 
+  // Extract plain values from snapshot (valtio proxy spread may not work for useMemo deps)
+  const editorValues = {
+    activeTab: snap.activeTab,
+    logo: snap.logo,
+    text: snap.text,
+    font: snap.font,
+    textColor: snap.textColor,
+    bold: snap.bold,
+    curved: snap.curved,
+    curveUp: snap.curveUp,
+    placement: snap.placement,
+    offsetX: snap.offsetX,
+    offsetY: snap.offsetY,
+    size: snap.size,
+    rotation: snap.rotation,
+  };
+
   // Build list of overlays to render:
   // - All placed items (using saved values, or editor values if being edited)
   // - Live preview if creating new item with content
@@ -160,19 +177,25 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
   snap.items.forEach((item) => {
     if (item.id === snap.editingId) {
       // Render with current editor values for live editing
-      overlays.push({ ...snap, _key: `item-${item.id}` });
+      overlays.push({ ...editorValues, _key: `item-${item.id}` });
     } else {
-      overlays.push({ ...item, _key: `item-${item.id}` });
+      overlays.push({
+        activeTab: item.activeTab, logo: item.logo, text: item.text,
+        font: item.font, textColor: item.textColor, bold: item.bold,
+        curved: item.curved, curveUp: item.curveUp, placement: item.placement,
+        offsetX: item.offsetX, offsetY: item.offsetY, size: item.size,
+        rotation: item.rotation, _key: `item-${item.id}`,
+      });
     }
   });
 
   // Live preview for new item (only when not editing existing)
   if (snap.editingId === null) {
     const hasPreviewContent =
-      (snap.activeTab === "logo" && snap.logo) ||
-      (snap.activeTab === "text" && snap.text.trim());
+      (editorValues.activeTab === "logo" && editorValues.logo) ||
+      (editorValues.activeTab === "text" && editorValues.text.trim());
     if (hasPreviewContent) {
-      overlays.push({ ...snap, _key: "preview" });
+      overlays.push({ ...editorValues, _key: "preview" });
     }
   }
 

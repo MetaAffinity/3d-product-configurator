@@ -111,8 +111,10 @@ export function removeItem(id) {
  */
 export function resetEditor() {
   const placement = logoTextState.placement; // keep current placement
+  const activeTab = logoTextState.activeTab; // keep current tab
   EDITOR_FIELDS.forEach((k) => { logoTextState[k] = DEFAULT_OVERLAY[k]; });
   logoTextState.placement = placement;
+  logoTextState.activeTab = activeTab;
 }
 
 /**

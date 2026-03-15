@@ -194,6 +194,7 @@ export default function LogoTextOverlay({ modelGroupRef, modelName }) {
  */
 function DecalItem({ overlay, cache }) {
   const entry = cache[overlay.placement];
+  const decalRef = React.useRef();
 
   // ── Text texture ──────────────────────────────────────────────────────
   const textCanvas = useMemo(() => {
@@ -254,10 +255,15 @@ function DecalItem({ overlay, cache }) {
 
   return createPortal(
     <Decal
+      ref={(mesh) => {
+        if (mesh) {
+          mesh.renderOrder = 10;
+          if (mesh.material) mesh.material.depthTest = false;
+        }
+      }}
       position={localPos.toArray()}
       rotation={localRotation}
-      scale={[localScale, localScale, localScale * 1.5]}
-      renderOrder={2}
+      scale={[localScale, localScale, localScale * 0.15]}
     >
       <meshStandardMaterial
         map={activeTexture}
@@ -268,8 +274,8 @@ function DecalItem({ overlay, cache }) {
         roughness={0.85}
         metalness={0}
         polygonOffset
-        polygonOffsetFactor={-4}
-        polygonOffsetUnits={-4}
+        polygonOffsetFactor={-10}
+        polygonOffsetUnits={-10}
       />
     </Decal>,
     entry.hitMesh

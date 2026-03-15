@@ -7,6 +7,7 @@ import teapot from "../img/teapot.png";
 import sneaker from "../img/sneaker.png";
 import poloshirt from "../img/demo.png";
 import hoodie from "../img/hoodie.png";
+import highnecktshirt from "../img/highnecktshirt.png";
 
 const ModelPicker = ({ updateSelectedModel }) => {
   return (
@@ -41,7 +42,7 @@ const ModelPicker = ({ updateSelectedModel }) => {
           <h4>Polo Shirt</h4>
         </div>
         <div onClick={() => updateSelectedModel("HighNeckTshirt")}>
-          <img src="/highneck-tshirt/thumbs/basic-tshirt.png" alt="highneck" style={{ maxWidth: 80 }} />
+          <img src={highnecktshirt} alt="highneck" />
           <h4>HighNeck</h4>
         </div>
         <div onClick={() => updateSelectedModel("Hoodie")}>

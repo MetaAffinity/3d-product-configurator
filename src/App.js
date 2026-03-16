@@ -9,16 +9,20 @@ import PartsPicker from "./Components/PartsPicker";
 import Toolbar from "./Components/Toolbar";
 import LogoTextPanel from "./Components/LogoTextPanel";
 import LogoTextOverlay from "./Components/LogoTextOverlay";
+import CustomOptionsPanel from "./Components/CustomOptionsPanel";
 import { modelConfig, modelStates, defaultModel } from "./config/models";
 import { switchLogoTextModel } from "./config/logoTextState";
+import { switchCustomOptionsModel } from "./config/customOptionsState";
 import { AiOutlineUser } from "react-icons/ai";
 import { MdTextFields } from "react-icons/md";
+import { MdTune } from "react-icons/md";
 
 function App() {
   const [selectedModel, setSelectedModel] = useState(defaultModel);
   const [isRotating, setIsRotating] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showLogoText, setShowLogoText] = useState(false);
+  const [showCustomOptions, setShowCustomOptions] = useState(false);
   const controls = useRef();
   const modelGroupRef = useRef();
 
@@ -93,6 +97,7 @@ function App() {
   // Model switching
   const handleModelChange = (model) => {
     switchLogoTextModel(model);
+    switchCustomOptionsModel(model);
     if (controls.current) {
       controls.current.reset();
       const camPos = modelConfig[model].cameraPosition;
@@ -142,6 +147,7 @@ function App() {
       <ColorPicker state={state} updateColor={updateColor} updateTexture={updateTexture} modelName={selectedModel} />
       <PartsPicker state={state} updateCurrent={handlePartSelect} modelName={selectedModel} />
       {showLogoText && <LogoTextPanel modelName={selectedModel} />}
+      {showCustomOptions && <CustomOptionsPanel modelName={selectedModel} />}
       <Toolbar
         onScreenshot={handleScreenshot}
         onToggleRotate={() => setIsRotating((prev) => !prev)}
@@ -160,6 +166,16 @@ function App() {
         <MdTextFields size={18} />
         <span>Logo / Text</span>
       </button>
+      {modelConfig[selectedModel]?.customOptions?.enabled && (
+        <button
+          className={`co-toggle-btn ${showCustomOptions ? "active" : ""}`}
+          onClick={() => setShowCustomOptions((p) => !p)}
+          title="Custom Options"
+        >
+          <MdTune size={18} />
+          <span>Options & Price</span>
+        </button>
+      )}
       <Canvas shadows camera={{ position: [1, 0, 2] }} gl={{ preserveDrawingBuffer: true }}>
         <ambientLight />
         <spotLight intensity={0.5} penumbra={1} position={[7, 15, 10]} castShadow />

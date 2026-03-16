@@ -173,6 +173,32 @@ const modelConfig = {
       buttons: [0, 1.0],
       sleeves: [0.8, 1.3],
     },
+    customOptions: {
+      enabled: true,
+      currency: "USD",
+      basePrice: 25.00,
+      groups: [
+        {
+          key: "logoType", label: "Logo Type", type: "select",
+          choices: [
+            { key: "none", label: "No Logo", price: 0 },
+            { key: "print", label: "Screen Print", price: 5.00 },
+            { key: "embroidery", label: "Embroidery", price: 12.00 },
+          ],
+          default: "none",
+        },
+        {
+          key: "fabric", label: "Fabric", type: "select",
+          choices: [
+            { key: "cotton", label: "100% Cotton", price: 0 },
+            { key: "polyester", label: "100% Polyester", price: 2.00 },
+            { key: "blend", label: "Cotton-Poly Blend", price: 1.50 },
+          ],
+          default: "cotton",
+        },
+        { key: "rushOrder", label: "Rush Production", type: "toggle", price: 15.00, default: false },
+      ],
+    },
   },
   HighNeckTshirt: {
     component: HighNeckTshirt,
@@ -248,6 +274,40 @@ const modelConfig = {
       bottom:     [0, 1.8],
       cuff:       [0.8, 1.5],
       pocket:     [0, 1.4],
+    },
+    customOptions: {
+      enabled: true,
+      currency: "USD",
+      basePrice: 35.00,
+      groups: [
+        {
+          key: "logoType", label: "Logo Type", type: "select",
+          choices: [
+            { key: "none", label: "No Logo", price: 0 },
+            { key: "print", label: "Screen Print", price: 5.00 },
+            { key: "embroidery", label: "Embroidery", price: 14.00 },
+          ],
+          default: "none",
+        },
+        {
+          key: "fabric", label: "Fabric", type: "select",
+          choices: [
+            { key: "fleece", label: "Cotton Fleece", price: 0 },
+            { key: "polyester", label: "Polyester Fleece", price: 3.00 },
+            { key: "organic", label: "Organic Cotton", price: 6.00 },
+          ],
+          default: "fleece",
+        },
+        {
+          key: "lining", label: "Inner Lining", type: "select",
+          choices: [
+            { key: "standard", label: "Standard", price: 0 },
+            { key: "sherpa", label: "Sherpa Lining", price: 8.00 },
+          ],
+          default: "standard",
+        },
+        { key: "rushOrder", label: "Rush Production", type: "toggle", price: 15.00, default: false },
+      ],
     },
   },
 };

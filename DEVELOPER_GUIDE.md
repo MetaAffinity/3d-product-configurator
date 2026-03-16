@@ -13,7 +13,8 @@ Complete reference for adding new models, patterns, options, and customizing the
 5. [How to Add Toggle Options (Show/Hide Parts)](#how-to-add-toggle-options-showhide-parts)
 6. [Per-Model Camera Settings](#per-model-camera-settings)
 7. [Logo / Text Overlay (Multi-Overlay)](#logo--text-overlay)
-8. [File Reference](#file-reference)
+8. [Custom Options & Pricing](#custom-options--pricing)
+9. [File Reference](#file-reference)
 
 ---
 
@@ -30,6 +31,7 @@ src/
     Hoodie.js                   — Hoodie component (6 colorable parts + zipper)
     LogoTextPanel.jsx           — Logo/text editor panel (multi-overlay)
     LogoTextOverlay.jsx         — 3D decal renderer (multiple items)
+    CustomOptionsPanel.jsx      — Custom options & pricing panel (per-model)
     ModelPicker.jsx             — Top bar model selector thumbnails
     ColorPicker.jsx             — Right panel: color swatches + pattern thumbnails
     PartsPicker.jsx             — Left panel: clickable parts + option toggles
@@ -38,6 +40,7 @@ src/
     patterns.js                 — Texture patterns per model per part
     swatches.js                 — Predefined color swatches per model per part
     logoTextState.js            — Multi-overlay logo/text state (items array, per-model)
+    customOptionsState.js       — Custom options selections state (per-model save/restore)
   img/                          — Thumbnail images for model picker
 
 public/
@@ -656,6 +659,120 @@ The `logoTextState.js` manages an `items[]` array for placed overlays:
 
 ---
 
+## Custom Options & Pricing
+
+The Custom Options module lets you add per-product configurable options (e.g. fabric type, logo style, rush production) with individual prices. A total is calculated live and users can download a PDF summary.
+
+**This module is fully optional** — models without `customOptions` or with `customOptions.enabled: false` won't show the Options panel at all.
+
+---
+
+### How to enable custom options for a model
+
+In `src/config/models.js`, add a `customOptions` block to any model:
+
+```js
+MyModel: {
+  // ... existing config (colors, cameraAngles, etc.)
+  customOptions: {
+    enabled: true,        // master toggle — set false to disable without removing config
+    currency: "USD",      // currency label shown in UI and PDF
+    basePrice: 25.00,     // starting price before options
+    groups: [
+      // Select group — user picks one option from a list
+      {
+        key: "fabric",              // unique key (used in state)
+        label: "Fabric",            // shown in UI
+        type: "select",
+        choices: [
+          { key: "cotton", label: "100% Cotton", price: 0 },       // price: 0 = "Included"
+          { key: "polyester", label: "100% Polyester", price: 2.00 },
+          { key: "blend", label: "Cotton-Poly Blend", price: 1.50 },
+        ],
+        default: "cotton",          // which choice is selected by default
+      },
+      // Toggle group — on/off switch with a fixed price
+      {
+        key: "rushOrder",
+        label: "Rush Production",
+        type: "toggle",
+        price: 15.00,               // added to total when toggled on
+        default: false,
+      },
+    ],
+  },
+}
+```
+
+### How to modify prices
+
+Edit the `price` values in the `customOptions.groups` array in `src/config/models.js`:
+
+- **Base price**: Change `basePrice` — this is always included in the total
+- **Select option price**: Change the `price` on individual `choices` — `0` shows as "Included"
+- **Toggle option price**: Change the `price` on the toggle group — added when toggle is on
+
+### How to add a new option group
+
+Add a new object to the `groups` array:
+
+```js
+// New select group
+{ key: "color_matching", label: "Color Matching", type: "select",
+  choices: [
+    { key: "standard", label: "Standard", price: 0 },
+    { key: "pantone", label: "Pantone Match", price: 8.00 },
+  ],
+  default: "standard",
+},
+
+// New toggle group
+{ key: "giftWrap", label: "Gift Wrapping", type: "toggle", price: 3.00, default: false },
+```
+
+### How to disable the module for a model
+
+Either remove the `customOptions` block entirely, or set `enabled: false`:
+
+```js
+customOptions: {
+  enabled: false,   // panel won't show, but config is preserved for later
+  // ...
+}
+```
+
+### How the total is calculated
+
+```
+Total = basePrice + sum(selected option prices)
+```
+
+For **select** groups: the price of the currently selected choice is added.
+For **toggle** groups: the price is added only when the toggle is on.
+
+### PDF export
+
+The "Download PDF" button generates an A4 PDF containing:
+- Product name and screenshot (captured from the 3D canvas)
+- Base price
+- Table of all selected options with their prices
+- Calculated total
+- Timestamp
+
+PDF is generated client-side using jsPDF — no server needed.
+
+### Key files
+
+| File | Purpose |
+|------|---------|
+| `src/config/models.js` | `customOptions` config per model (prices, groups, currency) |
+| `src/config/customOptionsState.js` | Valtio proxy state — selections, per-model save/restore |
+| `src/Components/CustomOptionsPanel.jsx` | UI panel — option cards, toggles, total, PDF button |
+| `src/utils/pdfExport.js` | PDF generation with jsPDF |
+| `src/App.js` | Toggle button, panel rendering, model switch integration |
+
+---
+
 ## File Reference
 
 | File | Purpose | Edit when |
@@ -668,7 +785,10 @@ The `logoTextState.js` manages an `items[]` array for placed overlays:
 | `src/img/` | Thumbnail images for model picker | Adding model thumbnail |
 | `public/[model]/` | GLB file + pattern images | Updating the 3D model or designs |
 | `src/config/logoTextState.js` | Logo/text overlay state | Changing logo/text state fields |
+| `src/config/customOptionsState.js` | Custom options proxy state | Changing option selection logic |
+| `src/utils/pdfExport.js` | PDF export (jsPDF) | Changing PDF layout or content |
 | `src/utils/createTextTexture.js` | Canvas text renderer | Changing text rendering logic |
+| `src/Components/CustomOptionsPanel.jsx` | Custom options UI panel | Adding UI features to options |
 | `src/Components/LogoTextPanel.jsx` | Logo/text UI panel | Adding fonts, UI controls |
 | `src/Components/LogoTextOverlay.jsx` | 3D overlay plane | Changing how overlay renders |
 | `public/index.html` | Google Fonts links | Adding new fonts |

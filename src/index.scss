@@ -784,6 +784,201 @@ code {
   }
 }
 
+// ── Custom Options toggle button ──────────────────────────────────────
+.co-toggle-btn {
+  position: absolute;
+  top: 16px;
+  left: 190px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  font-family: inherit;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.95);
+    color: #222;
+  }
+
+  &.active {
+    background: #333;
+    color: #fff;
+  }
+}
+
+// ── Custom Options panel ─────────────────────────────────────────────
+.custom-options-panel {
+  position: absolute;
+  top: 56px;
+  left: 190px;
+  z-index: 10;
+  max-height: 75vh;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-radius: 14px;
+  padding: 16px;
+  width: 260px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.14);
+
+  h3 {
+    margin: 0 0 14px 0;
+    font-size: 15px;
+    color: #333;
+  }
+
+  .co-group {
+    margin-bottom: 12px;
+  }
+
+  .co-group-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 6px;
+  }
+
+  .co-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .co-choice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(0, 0, 0, 0.02);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    &.active {
+      border-color: #333;
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    .co-choice-label {
+      font-size: 13px;
+      color: #333;
+    }
+
+    .co-choice-price {
+      font-size: 11px;
+      color: #888;
+      font-weight: 500;
+    }
+
+    &.active .co-choice-label {
+      font-weight: 600;
+    }
+
+    &.active .co-choice-price {
+      color: #333;
+    }
+  }
+
+  .co-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+
+  .co-toggle-price {
+    font-size: 12px;
+    color: #888;
+  }
+
+  .co-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+    margin: 12px 0;
+  }
+
+  .co-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .co-total-price {
+    font-size: 16px;
+    color: #111;
+  }
+
+  .co-pdf-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #333;
+    color: #fff;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #555;
+    }
+  }
+
+  .toggle-switch {
+    width: 38px;
+    height: 20px;
+    border-radius: 10px;
+    background: #ccc;
+    position: relative;
+    transition: background 0.2s;
+    cursor: pointer;
+
+    &.on {
+      background: #333;
+    }
+
+    .toggle-knob {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: left 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    &.on .toggle-knob {
+      left: 20px;
+    }
+  }
+}
+
 // ── Design color picker (in PartsPicker) ────────────────────────────────
 .design-color-picker {
   margin-top: 8px;

@@ -11,15 +11,21 @@ For full developer instructions (how to add models, patterns, options), see **[D
 ### Added
 - **Selected model highlight** — Active model in model picker now shows a dark border and subtle background, making it clear which model is selected.
 - **Custom color picker redesigned** — Design color "custom color" input replaced with a rainbow circle button with "+" icon. Much clearer that it opens a full color picker. Controlled by `ENABLE_CUSTOM_DESIGN_COLOR` flag in PartsPicker.jsx.
+- **Custom Options & Pricing module** — Per-product configurable options (Logo Type, Fabric, etc.) with prices. Toggle or select type groups. Running total calculation. Enable/disable per model via `customOptions.enabled` in models.js.
+- **PDF Export** — "Download PDF" button generates an A4 PDF with product screenshot, selected options table, prices, and total. Uses jsPDF.
+- **PoloShirt custom options** — Logo Type (Print/Embroidery), Fabric (Cotton/Polyester/Blend), Rush Production toggle. Base price $25.
+- **Hoodie custom options** — Logo Type, Fabric (Fleece/Polyester/Organic), Inner Lining (Standard/Sherpa), Rush Production. Base price $35.
 
 ### Changed
-- **Logo/Text panel moved to top-left** — Toggle button and panel relocated from bottom-left to top-left corner, freeing bottom area for future price module and custom options panel.
+- **Logo/Text panel moved to top-left** — Toggle button and panel relocated from bottom-left to top-left corner, freeing bottom area for price module.
 
 ### Technical
-- `src/Components/ModelPicker.jsx` — Accepts `selectedModel` prop, applies `.model-item.active` class.
-- `src/App.js` — Passes `selectedModel` to ModelPicker.
-- `src/Components/PartsPicker.jsx` — `ENABLE_CUSTOM_DESIGN_COLOR` flag controls custom color picker visibility. Rainbow button with hidden color input.
-- `src/index.scss` — `.model-item.active` styles, `.design-color-more` rainbow button, logtext panel/button repositioned to top-left.
+- `src/config/customOptionsState.js` — Valtio proxy for custom option selections with per-model save/restore.
+- `src/utils/pdfExport.js` — jsPDF-based PDF generation with canvas screenshot capture.
+- `src/Components/CustomOptionsPanel.jsx` — UI panel with select cards, toggle switches, total, PDF button.
+- `src/App.js` — Toggle button for Options panel, `switchCustomOptionsModel` on model change.
+- `src/config/models.js` — `customOptions` config blocks added to PoloShirt and Hoodie.
+- `src/index.scss` — `.co-toggle-btn`, `.custom-options-panel` styles.
 
 ---
 

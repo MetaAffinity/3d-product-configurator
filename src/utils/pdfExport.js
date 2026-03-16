@@ -8,8 +8,9 @@ import { generateShareURL } from "./shareLink";
  * Generate a PDF summary with user-captured views of the product.
  * @param {string} modelName
  * @param {Array} views — array of { label, dataURL } captured by the user
+ * @param {string} note — optional product note from user
  */
-export async function exportPDF(modelName, views) {
+export async function exportPDF(modelName, views, note) {
   const cfg = modelConfig[modelName]?.customOptions;
   if (!cfg?.enabled) return;
 
@@ -161,6 +162,30 @@ export async function exportPDF(modelName, views) {
   doc.text("Total:", 20, y);
   doc.text(`${currency} ${total.toFixed(2)}`, pageW - 20, y, { align: "right" });
   y += 12;
+
+  // ── Product Note ──────────────────────────────────────────────────
+  if (note && note.trim()) {
+    // Check if we need page break
+    if (y > 240) {
+      doc.addPage();
+      y = 20;
+    }
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0);
+    doc.text("Product Note", 20, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(60);
+    const noteLines = doc.splitTextToSize(note.trim(), pageW - 44);
+    doc.text(noteLines, 24, y);
+    y += noteLines.length * 5 + 6;
+
+    doc.setDrawColor(200);
+    doc.line(20, y, pageW - 20, y);
+    y += 8;
+  }
 
   // ── QR Code ──────────────────────────────────────────────────────
   if (features.qrCode) {

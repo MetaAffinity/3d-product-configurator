@@ -5,13 +5,11 @@ import {
   customOptionsState,
   setOption,
   getTotal,
-  undoOption,
-  redoOption,
 } from "../config/customOptionsState";
 import { exportPDF } from "../utils/pdfExport";
 import { generateShareURL } from "../utils/shareLink";
 import AnnotationCanvas from "./AnnotationCanvas";
-import { MdAddAPhoto, MdClose, MdUndo, MdRedo, MdShare, MdEdit } from "react-icons/md";
+import { MdAddAPhoto, MdClose, MdShare, MdEdit } from "react-icons/md";
 
 function captureCanvas() {
   const canvas = document.querySelector("canvas");
@@ -51,7 +49,6 @@ function useAnimatedValue(target, duration = 350) {
     const animate = (now) => {
       const elapsed = now - startRef.current.time;
       const t = Math.min(elapsed / duration, 1);
-      // Ease out cubic
       const ease = 1 - Math.pow(1 - t, 3);
       const current = startRef.current.value + (target - startRef.current.value) * ease;
       setDisplay(current);
@@ -77,6 +74,7 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
   const [extraViews, setExtraViews] = useState([]);
   const [copied, setCopied] = useState(false);
   const [annotatingIndex, setAnnotatingIndex] = useState(null);
+  const [productNote, setProductNote] = useState("");
 
   const features = cfg?.features || {};
 
@@ -96,15 +94,13 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
   const handleExport = useCallback(() => {
     let allViews;
     if (extraViews.length > 0) {
-      // User captured custom views — use only those
       allViews = extraViews;
     } else {
-      // No custom views — capture current canvas as default
       const defaultView = captureCanvas();
       allViews = defaultView ? [{ label: "Default View", dataURL: defaultView }] : [];
     }
-    exportPDF(modelName, allViews);
-  }, [modelName, extraViews]);
+    exportPDF(modelName, allViews, productNote);
+  }, [modelName, extraViews, productNote]);
 
   const handleShare = useCallback(() => {
     const url = generateShareURL(modelName);
@@ -112,7 +108,6 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }).catch(() => {
-      // Fallback: prompt
       window.prompt("Copy this link:", url);
     });
   }, [modelName]);
@@ -129,38 +124,12 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
   const currency = cfg?.currency || "USD";
   const total = cfg?.enabled ? getTotal(modelName) : 0;
   const animatedTotal = useAnimatedValue(total);
-  const canUndo = snap._history.length > 0;
-  const canRedo = snap._future.length > 0;
 
   if (!cfg?.enabled) return null;
 
   return (
     <div className={embedded ? "custom-options-embedded" : "custom-options-panel"}>
       {!embedded && <h3>Customize Options</h3>}
-
-      {/* Undo/Redo bar */}
-      {features.undoRedo && (
-        <div className="co-undo-redo">
-          <button
-            className="co-undo-btn"
-            onClick={undoOption}
-            disabled={!canUndo}
-            title="Undo"
-          >
-            <MdUndo size={16} />
-            <span>Undo</span>
-          </button>
-          <button
-            className="co-redo-btn"
-            onClick={redoOption}
-            disabled={!canRedo}
-            title="Redo"
-          >
-            <MdRedo size={16} />
-            <span>Redo</span>
-          </button>
-        </div>
-      )}
 
       {cfg.groups.map((group, idx) => (
         <div key={group.key} className="co-group" style={embedded ? { animationDelay: `${idx * 0.08}s` } : undefined}>
@@ -210,6 +179,19 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
 
       <div className="co-divider" />
 
+      {/* Product Note */}
+      <label className="co-group-label">Product Note</label>
+      <p className="co-views-hint">Add any special instructions or notes for this order.</p>
+      <textarea
+        className="co-note-textarea"
+        placeholder="e.g. Please use matte finish, deliver by March 25..."
+        value={productNote}
+        onChange={(e) => setProductNote(e.target.value)}
+        rows={3}
+      />
+
+      <div className="co-divider" />
+
       {/* Share Link */}
       {features.shareLink && (
         <button className="co-share-btn" onClick={handleShare}>
@@ -254,7 +236,7 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
         {extraViews.length > 0 && ` (1 + ${extraViews.length} views)`}
       </button>
 
-      {/* Annotation Modal */}
+      {/* Annotation Modal — rendered via portal at document.body */}
       {annotatingIndex !== null && extraViews[annotatingIndex] && (
         <AnnotationCanvas
           imageDataURL={extraViews[annotatingIndex].dataURL}

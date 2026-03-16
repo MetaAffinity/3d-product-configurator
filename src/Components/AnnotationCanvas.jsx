@@ -1,16 +1,48 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
+import ReactDOM from "react-dom";
 import { MdClose, MdUndo, MdSave } from "react-icons/md";
 
 const COLORS = ["#ff0000", "#0066ff", "#00cc44", "#ff9900", "#000000", "#ffffff"];
+const TOOLS = [
+  { key: "pen", label: "Pen" },
+  { key: "arrow", label: "Arrow" },
+  { key: "text", label: "Text" },
+  { key: "eraser", label: "Eraser" },
+];
+
+function drawArrowHead(ctx, fromX, fromY, toX, toY, headLen) {
+  const angle = Math.atan2(toY - fromY, toX - fromX);
+  ctx.beginPath();
+  ctx.moveTo(toX, toY);
+  ctx.lineTo(
+    toX - headLen * Math.cos(angle - Math.PI / 6),
+    toY - headLen * Math.sin(angle - Math.PI / 6)
+  );
+  ctx.lineTo(
+    toX - headLen * Math.cos(angle + Math.PI / 6),
+    toY - headLen * Math.sin(angle + Math.PI / 6)
+  );
+  ctx.closePath();
+  ctx.fill();
+}
 
 export default function AnnotationCanvas({ imageDataURL, onSave, onCancel }) {
   const canvasRef = useRef(null);
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [activeTool, setActiveTool] = useState("pen");
   const [penColor, setPenColor] = useState("#ff0000");
   const [penSize, setPenSize] = useState(3);
-  const [isEraser, setIsEraser] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
   const historyRef = useRef([]);
   const imgRef = useRef(null);
+
+  // Arrow tool state
+  const arrowStartRef = useRef(null);
+  const previewRef = useRef(null); // for arrow preview snapshot
+
+  // Text tool state
+  const [textInput, setTextInput] = useState(null); // { x, y } screen coords
+  const [textValue, setTextValue] = useState("");
+  const textInputRef = useRef(null);
 
   // Load image and set canvas size
   useEffect(() => {
@@ -28,7 +60,14 @@ export default function AnnotationCanvas({ imageDataURL, onSave, onCancel }) {
     img.src = imageDataURL;
   }, [imageDataURL]);
 
-  const getPos = useCallback((e) => {
+  // Focus text input when it appears
+  useEffect(() => {
+    if (textInput && textInputRef.current) {
+      textInputRef.current.focus();
+    }
+  }, [textInput]);
+
+  const getCanvasPos = useCallback((e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -41,57 +80,163 @@ export default function AnnotationCanvas({ imageDataURL, onSave, onCancel }) {
     };
   }, []);
 
-  const startDraw = useCallback((e) => {
+  const getScale = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return 1;
+    return canvas.width / canvas.getBoundingClientRect().width;
+  }, []);
+
+  const pushSnapshot = useCallback(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    historyRef.current.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+  }, []);
+
+  // ── PEN / ERASER ──────────────────────────────────────────────────
+  const startPen = useCallback((e) => {
     e.preventDefault();
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    const pos = getPos(e);
+    const pos = getCanvasPos(e);
+    const scale = getScale();
+    const isEraser = activeTool === "eraser";
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
     ctx.strokeStyle = isEraser ? "#ececed" : penColor;
-    ctx.lineWidth = (isEraser ? penSize * 3 : penSize) * (canvas.width / canvasRef.current.getBoundingClientRect().width);
+    ctx.lineWidth = (isEraser ? penSize * 3 : penSize) * scale;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    if (isEraser) {
-      ctx.globalCompositeOperation = "destination-out";
-    } else {
-      ctx.globalCompositeOperation = "source-over";
-    }
+    ctx.globalCompositeOperation = isEraser ? "destination-out" : "source-over";
     setIsDrawing(true);
-  }, [getPos, penColor, penSize, isEraser]);
+  }, [getCanvasPos, getScale, penColor, penSize, activeTool]);
 
-  const draw = useCallback((e) => {
+  const movePen = useCallback((e) => {
     if (!isDrawing) return;
     e.preventDefault();
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const pos = getPos(e);
+    const ctx = canvasRef.current.getContext("2d");
+    const pos = getCanvasPos(e);
     ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
-  }, [isDrawing, getPos]);
+  }, [isDrawing, getCanvasPos]);
 
-  const endDraw = useCallback(() => {
+  const endPen = useCallback(() => {
     if (!isDrawing) return;
     setIsDrawing(false);
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     ctx.globalCompositeOperation = "source-over";
-    // If eraser was used, redraw image underneath
-    if (isEraser && imgRef.current) {
-      // Save current drawing
-      const drawingData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      // Create temp canvas with original image
-      const tmpCanvas = document.createElement("canvas");
-      tmpCanvas.width = canvas.width;
-      tmpCanvas.height = canvas.height;
-      const tmpCtx = tmpCanvas.getContext("2d");
-      tmpCtx.drawImage(imgRef.current, 0, 0);
-      tmpCtx.putImageData(drawingData, 0, 0);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(tmpCanvas, 0, 0);
+    pushSnapshot();
+  }, [isDrawing, pushSnapshot]);
+
+  // ── ARROW ─────────────────────────────────────────────────────────
+  const startArrow = useCallback((e) => {
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    arrowStartRef.current = getCanvasPos(e);
+    previewRef.current = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    setIsDrawing(true);
+  }, [getCanvasPos]);
+
+  const moveArrow = useCallback((e) => {
+    if (!isDrawing || !arrowStartRef.current) return;
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const pos = getCanvasPos(e);
+    const from = arrowStartRef.current;
+    const scale = getScale();
+
+    // Restore snapshot to clear previous preview
+    if (previewRef.current) {
+      ctx.putImageData(previewRef.current, 0, 0);
     }
-    historyRef.current.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-  }, [isDrawing, isEraser]);
+
+    // Draw arrow preview
+    const lineW = penSize * scale;
+    ctx.strokeStyle = penColor;
+    ctx.fillStyle = penColor;
+    ctx.lineWidth = lineW;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    drawArrowHead(ctx, from.x, from.y, pos.x, pos.y, lineW * 4 + 6 * scale);
+  }, [isDrawing, getCanvasPos, getScale, penColor, penSize]);
+
+  const endArrow = useCallback(() => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+    arrowStartRef.current = null;
+    previewRef.current = null;
+    pushSnapshot();
+  }, [isDrawing, pushSnapshot]);
+
+  // ── TEXT ───────────────────────────────────────────────────────────
+  const handleTextClick = useCallback((e) => {
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setTextInput({
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+      canvasX: getCanvasPos(e).x,
+      canvasY: getCanvasPos(e).y,
+    });
+    setTextValue("");
+  }, [getCanvasPos]);
+
+  const placeText = useCallback(() => {
+    if (!textInput || !textValue.trim()) {
+      setTextInput(null);
+      setTextValue("");
+      return;
+    }
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const scale = getScale();
+    const fontSize = Math.max(14, penSize * 4) * scale;
+    ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+    ctx.fillStyle = penColor;
+    ctx.globalCompositeOperation = "source-over";
+
+    // Draw background for readability
+    const metrics = ctx.measureText(textValue);
+    const pad = 4 * scale;
+    const bgX = textInput.canvasX - pad;
+    const bgY = textInput.canvasY - fontSize - pad;
+    const bgW = metrics.width + pad * 2;
+    const bgH = fontSize + pad * 2;
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.fillRect(bgX, bgY, bgW, bgH);
+
+    ctx.fillStyle = penColor;
+    ctx.fillText(textValue, textInput.canvasX, textInput.canvasY);
+
+    pushSnapshot();
+    setTextInput(null);
+    setTextValue("");
+  }, [textInput, textValue, penColor, penSize, getScale, pushSnapshot]);
+
+  // ── UNIFIED HANDLERS ──────────────────────────────────────────────
+  const handlePointerDown = useCallback((e) => {
+    if (activeTool === "pen" || activeTool === "eraser") startPen(e);
+    else if (activeTool === "arrow") startArrow(e);
+    else if (activeTool === "text") handleTextClick(e);
+  }, [activeTool, startPen, startArrow, handleTextClick]);
+
+  const handlePointerMove = useCallback((e) => {
+    if (activeTool === "pen" || activeTool === "eraser") movePen(e);
+    else if (activeTool === "arrow") moveArrow(e);
+  }, [activeTool, movePen, moveArrow]);
+
+  const handlePointerUp = useCallback(() => {
+    if (activeTool === "pen" || activeTool === "eraser") endPen();
+    else if (activeTool === "arrow") endArrow();
+  }, [activeTool, endPen, endArrow]);
 
   const handleUndo = useCallback(() => {
     const canvas = canvasRef.current;
@@ -104,20 +249,11 @@ export default function AnnotationCanvas({ imageDataURL, onSave, onCancel }) {
 
   const handleSave = useCallback(() => {
     const canvas = canvasRef.current;
-    // Composite: draw original image first, then annotations on top
-    const finalCanvas = document.createElement("canvas");
-    finalCanvas.width = canvas.width;
-    finalCanvas.height = canvas.height;
-    const fCtx = finalCanvas.getContext("2d");
-    if (imgRef.current) {
-      fCtx.drawImage(imgRef.current, 0, 0);
-    }
-    // Draw annotations (current canvas minus original = only annotations)
-    fCtx.drawImage(canvas, 0, 0);
-    onSave(finalCanvas.toDataURL("image/png"));
+    onSave(canvas.toDataURL("image/png"));
   }, [onSave]);
 
-  return (
+  // Render via portal so it's fullscreen, not inside offcanvas
+  return ReactDOM.createPortal(
     <div className="annotation-overlay">
       <div className="annotation-modal">
         <div className="annotation-header">
@@ -127,37 +263,65 @@ export default function AnnotationCanvas({ imageDataURL, onSave, onCancel }) {
           </button>
         </div>
         <div className="annotation-canvas-wrap">
-          <canvas
-            ref={canvasRef}
-            className="annotation-canvas"
-            onMouseDown={startDraw}
-            onMouseMove={draw}
-            onMouseUp={endDraw}
-            onMouseLeave={endDraw}
-            onTouchStart={startDraw}
-            onTouchMove={draw}
-            onTouchEnd={endDraw}
-          />
+          <div style={{ position: "relative", display: "inline-block" }}>
+            <canvas
+              ref={canvasRef}
+              className="annotation-canvas"
+              onMouseDown={handlePointerDown}
+              onMouseMove={handlePointerMove}
+              onMouseUp={handlePointerUp}
+              onMouseLeave={handlePointerUp}
+              onTouchStart={handlePointerDown}
+              onTouchMove={handlePointerMove}
+              onTouchEnd={handlePointerUp}
+            />
+            {/* Floating text input when text tool is active */}
+            {textInput && (
+              <div
+                className="annotation-text-input-wrap"
+                style={{
+                  left: textInput.x,
+                  top: textInput.y,
+                }}
+              >
+                <input
+                  ref={textInputRef}
+                  type="text"
+                  className="annotation-text-input"
+                  value={textValue}
+                  onChange={(e) => setTextValue(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") placeText(); if (e.key === "Escape") { setTextInput(null); setTextValue(""); } }}
+                  onBlur={placeText}
+                  placeholder="Type here..."
+                  style={{ color: penColor }}
+                />
+              </div>
+            )}
+          </div>
         </div>
         <div className="annotation-tools">
+          <div className="annotation-tool-row">
+            {TOOLS.map((tool) => (
+              <button
+                key={tool.key}
+                className={`annotation-tool-btn ${activeTool === tool.key ? "active" : ""}`}
+                onClick={() => { setActiveTool(tool.key); setTextInput(null); }}
+              >
+                {tool.label}
+              </button>
+            ))}
+          </div>
           <div className="annotation-colors">
             {COLORS.map((c) => (
               <div
                 key={c}
-                className={`annotation-color-swatch ${penColor === c && !isEraser ? "active" : ""}`}
+                className={`annotation-color-swatch ${penColor === c ? "active" : ""}`}
                 style={{ background: c, border: c === "#ffffff" ? "1.5px solid #ccc" : undefined }}
-                onClick={() => { setPenColor(c); setIsEraser(false); }}
+                onClick={() => setPenColor(c)}
               />
             ))}
           </div>
           <div className="annotation-controls">
-            <button
-              className={`annotation-tool-btn ${isEraser ? "active" : ""}`}
-              onClick={() => setIsEraser(!isEraser)}
-              title="Eraser"
-            >
-              Eraser
-            </button>
             <label className="annotation-size-label">
               Size
               <input
@@ -182,6 +346,7 @@ export default function AnnotationCanvas({ imageDataURL, onSave, onCancel }) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

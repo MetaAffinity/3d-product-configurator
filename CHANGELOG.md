@@ -11,19 +11,26 @@ For full developer instructions (how to add models, patterns, options), see **[D
 ### Added
 - **Company branding in PDF** — PDF now includes company name and tagline header above the product title. Configured via `branding.companyName` and `branding.tagline` in `customOptions`.
 - **QR code in PDF** (configurable) — A QR code is generated in the PDF linking to a shareable URL with the full configuration (model, colors, options). Enable/disable via `features.qrCode`.
-- **Undo/Redo for option changes** (configurable) — Undo and redo buttons above option groups let users step back/forward through option selections. History stack of up to 50 entries. Enable/disable via `features.undoRedo`.
 - **Animated price transitions** — The total price now smoothly animates (ease-out cubic, 350ms) when options change instead of jumping instantly.
-- **Image annotations** (configurable) — Users can draw on captured views before adding them to the PDF. Click the edit icon on a thumbnail to open a drawing canvas with pen colors, size control, eraser, and undo. Enable/disable via `features.annotations`.
+- **Image annotations** (configurable) — Annotation canvas opens as a centered modal on the main screen (via React portal). Tools: Pen, Arrow, Text, Eraser with color picker and size control. Enable/disable via `features.annotations`.
+- **Arrow annotation tool** — Draw arrows to point at specific areas on captured views. Arrow head auto-scales with pen size.
+- **Text annotation tool** — Click anywhere on the canvas to place text. Floating input appears at click position, text renders with a readable white background.
+- **Product Note** — Textarea in options panel where users write special instructions or notes. Included in the PDF under a "Product Note" section with auto-wrapped text.
 - **Share link** (configurable) — "Copy Share Link" button generates a URL encoding the current model, colors, and option selections. Opening the link auto-applies the configuration. Enable/disable via `features.shareLink`.
+
+### Changed
+- **Annotation modal renders on main screen** — Now uses React portal (`document.body`) so it opens as a centered modal overlay on the full screen, not squeezed inside the offcanvas sidebar.
+
+### Removed
+- **Undo/Redo buttons** — Removed from custom options panel as they were unnecessary for option selections.
 
 ### Technical
 - `src/utils/shareLink.js` — URL encoding/decoding of configuration (model + colors + selections as base64).
-- `src/Components/AnnotationCanvas.jsx` — Canvas-based annotation modal with drawing tools.
-- `src/config/customOptionsState.js` — Added `undoOption()`, `redoOption()` with history/future stacks.
-- `src/utils/pdfExport.js` — Now async. Added branding header and QR code generation via `qrcode` package.
+- `src/Components/AnnotationCanvas.jsx` — Fullscreen modal via React portal. Tools: pen, arrow, text, eraser. Arrow drawing with preview and arrowhead. Text tool with floating input.
+- `src/utils/pdfExport.js` — Now async. Added branding header, product note section, and QR code generation via `qrcode` package.
 - `src/config/models.js` — Added `branding` and `features` config objects to PoloShirt and Hoodie `customOptions`.
 - `src/App.js` — Loads shared configuration from URL on mount via `loadFromURL()`.
-- `src/index.scss` — Styles for undo/redo, share link, annotation modal, animated total.
+- `src/index.scss` — Styles for product note, share link, annotation modal (portal), annotation tools, text input, animated total.
 - `package.json` — Added `qrcode` dependency.
 
 ---

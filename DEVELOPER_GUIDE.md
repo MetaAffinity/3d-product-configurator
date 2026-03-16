@@ -695,8 +695,7 @@ MyModel: {
     // Toggleable features — set false to hide from UI
     features: {
       qrCode: true,        // QR code in PDF linking to shareable config URL
-      undoRedo: true,       // Undo/Redo buttons for option changes
-      annotations: true,   // Draw annotations on captured views
+      annotations: true,   // Draw/arrow/text annotations on captured views
       shareLink: true,     // "Copy Share Link" button
     },
 
@@ -846,15 +845,13 @@ Each feature in the `features` object can be independently enabled (`true`) or d
 | Feature | Config key | What it does |
 |---------|-----------|--------------|
 | QR Code | `features.qrCode` | Adds a QR code to the PDF that links to a shareable URL with the full configuration |
-| Undo/Redo | `features.undoRedo` | Shows Undo/Redo buttons above option groups. Tracks up to 50 history entries |
-| Annotations | `features.annotations` | Adds an edit icon on captured view thumbnails. Click to open a drawing canvas with pen, eraser, colors, undo |
+| Annotations | `features.annotations` | Adds an edit icon on captured view thumbnails. Click to open a centered modal with pen, arrow, text, and eraser tools |
 | Share Link | `features.shareLink` | Shows a "Copy Share Link" button. Generates a URL with model + colors + selections encoded as base64 |
 
 To disable a feature, set it to `false`:
 ```js
 features: {
   qrCode: false,      // no QR in PDF
-  undoRedo: true,      // keep undo/redo
   annotations: false,  // no drawing on views
   shareLink: true,     // keep share button
 },
@@ -874,24 +871,44 @@ The JSON payload contains:
 
 On page load, `loadFromURL()` in `src/utils/shareLink.js` checks for this parameter, applies the configuration, and cleans the URL.
 
-### Undo/Redo internals
+### Product Note
 
-The undo/redo system is in `src/config/customOptionsState.js`:
-- `_history[]` — past selection snapshots (max 50)
-- `_future[]` — redo snapshots (cleared on new action)
-- `setOption()` — automatically pushes current state to history before changing
-- `undoOption()` — pops from history, pushes current to future
-- `redoOption()` — pops from future, pushes current to history
+A textarea in the options panel where users can type special instructions, requests, or notes. The note text is:
+- Displayed in the options panel below the total price
+- Included in the PDF under a "Product Note" heading with auto-wrapped text
+- Not persisted across page reloads (session only)
+
+To change the placeholder text, edit `CustomOptionsPanel.jsx` — look for the `co-note-textarea` element.
 
 ### Annotation canvas
 
-The annotation modal (`src/Components/AnnotationCanvas.jsx`) provides:
-- Drawing on captured view images
+The annotation modal (`src/Components/AnnotationCanvas.jsx`) renders as a **centered modal overlay on the main screen** via React portal (`document.body`), not inside the sidebar. This gives users a larger working area for detailed annotations.
+
+**Tools available:**
+
+| Tool | Description |
+|------|-------------|
+| **Pen** | Freehand drawing with selected color and size |
+| **Arrow** | Click and drag to draw arrows pointing at specific areas. Arrow head auto-scales with pen size |
+| **Text** | Click on canvas to place a floating text input. Type text and press Enter to stamp it on the canvas. Text renders with a semi-transparent white background for readability |
+| **Eraser** | Erase drawn annotations (3x pen size for wider coverage) |
+
+Additional controls:
 - 6 preset pen colors (red, blue, green, orange, black, white)
 - Adjustable pen size (1–12px)
-- Eraser mode
 - Undo (step-by-step history)
 - Save replaces the original capture with the annotated version
+
+**Where to modify annotation tools:**
+
+| What | Where |
+|------|-------|
+| Add/remove pen colors | `COLORS` array at top of `AnnotationCanvas.jsx` |
+| Add new tool | Add to `TOOLS` array, add handler functions, wire into `handlePointerDown/Move/Up` |
+| Change arrow head size | `drawArrowHead()` function — `headLen` parameter |
+| Change text font/style | `placeText()` function — `ctx.font` and background settings |
+| Change modal size | `.annotation-modal { width: 680px }` in `index.scss` |
+| Change canvas max height | `.annotation-canvas { max-height: 55vh }` in `index.scss` |
 
 ### Key files
 

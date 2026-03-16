@@ -184,8 +184,7 @@ const modelConfig = {
       },
       features: {
         qrCode: true,        // QR code in PDF linking to shareable config
-        undoRedo: true,       // Undo/Redo buttons for option changes
-        annotations: true,   // Draw annotations on captured views
+        annotations: true,   // Draw/arrow/text annotations on captured views
         shareLink: true,     // Copy shareable link button
       },
       groups: [

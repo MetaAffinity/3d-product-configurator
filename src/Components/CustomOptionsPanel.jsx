@@ -8,7 +8,7 @@ import {
 } from "../config/customOptionsState";
 import { exportPDF } from "../utils/pdfExport";
 
-export default function CustomOptionsPanel({ modelName }) {
+export default function CustomOptionsPanel({ modelName, embedded }) {
   const snap = useSnapshot(customOptionsState);
   const cfg = modelConfig[modelName]?.customOptions;
 
@@ -18,11 +18,11 @@ export default function CustomOptionsPanel({ modelName }) {
   const total = getTotal(modelName);
 
   return (
-    <div className="custom-options-panel">
-      <h3>Customize Options</h3>
+    <div className={embedded ? "custom-options-embedded" : "custom-options-panel"}>
+      {!embedded && <h3>Customize Options</h3>}
 
-      {cfg.groups.map((group) => (
-        <div key={group.key} className="co-group">
+      {cfg.groups.map((group, idx) => (
+        <div key={group.key} className="co-group" style={embedded ? { animationDelay: `${idx * 0.08}s` } : undefined}>
           <label className="co-group-label">{group.label}</label>
 
           {group.type === "select" && (

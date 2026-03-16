@@ -14,15 +14,14 @@ import { modelConfig, modelStates, defaultModel } from "./config/models";
 import { switchLogoTextModel } from "./config/logoTextState";
 import { switchCustomOptionsModel } from "./config/customOptionsState";
 import { AiOutlineUser } from "react-icons/ai";
-import { MdTextFields } from "react-icons/md";
-import { MdTune } from "react-icons/md";
+import { MdTextFields, MdTune, MdClose } from "react-icons/md";
 
 function App() {
   const [selectedModel, setSelectedModel] = useState(defaultModel);
   const [isRotating, setIsRotating] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showLogoText, setShowLogoText] = useState(false);
-  const [showCustomOptions, setShowCustomOptions] = useState(false);
+  // offcanvas: null | "logoText" | "customOptions"
+  const [offcanvas, setOffcanvas] = useState(null);
   const controls = useRef();
   const modelGroupRef = useRef();
 
@@ -146,8 +145,25 @@ function App() {
       <ModelPicker updateSelectedModel={handleModelChange} selectedModel={selectedModel} />
       <ColorPicker state={state} updateColor={updateColor} updateTexture={updateTexture} modelName={selectedModel} />
       <PartsPicker state={state} updateCurrent={handlePartSelect} modelName={selectedModel} />
-      {showLogoText && <LogoTextPanel modelName={selectedModel} />}
-      {showCustomOptions && <CustomOptionsPanel modelName={selectedModel} />}
+      {/* Offcanvas backdrop */}
+      {offcanvas && (
+        <div className="offcanvas-backdrop" onClick={() => setOffcanvas(null)} />
+      )}
+      {/* Offcanvas drawer */}
+      <div className={`offcanvas-drawer ${offcanvas ? "open" : ""}`}>
+        <div className="offcanvas-header">
+          <h3 className="offcanvas-title">
+            {offcanvas === "logoText" ? "Logo / Text" : "Options & Price"}
+          </h3>
+          <button className="offcanvas-close" onClick={() => setOffcanvas(null)}>
+            <MdClose size={20} />
+          </button>
+        </div>
+        <div className="offcanvas-body">
+          {offcanvas === "logoText" && <LogoTextPanel modelName={selectedModel} embedded />}
+          {offcanvas === "customOptions" && <CustomOptionsPanel modelName={selectedModel} embedded />}
+        </div>
+      </div>
       <Toolbar
         onScreenshot={handleScreenshot}
         onToggleRotate={() => setIsRotating((prev) => !prev)}
@@ -160,8 +176,8 @@ function App() {
       />
       <div className="left-action-buttons">
         <button
-          className={`left-action-btn ${showLogoText ? "active" : ""}`}
-          onClick={() => { setShowLogoText((p) => !p); setShowCustomOptions(false); }}
+          className={`left-action-btn ${offcanvas === "logoText" ? "active" : ""}`}
+          onClick={() => setOffcanvas((p) => p === "logoText" ? null : "logoText")}
           title="Logo / Text"
         >
           <MdTextFields size={18} />
@@ -169,8 +185,8 @@ function App() {
         </button>
         {modelConfig[selectedModel]?.customOptions?.enabled && (
           <button
-            className={`left-action-btn ${showCustomOptions ? "active" : ""}`}
-            onClick={() => { setShowCustomOptions((p) => !p); setShowLogoText(false); }}
+            className={`left-action-btn ${offcanvas === "customOptions" ? "active" : ""}`}
+            onClick={() => setOffcanvas((p) => p === "customOptions" ? null : "customOptions")}
             title="Custom Options"
           >
             <MdTune size={18} />

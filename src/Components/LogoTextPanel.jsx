@@ -17,7 +17,7 @@ const FONTS = [
 
 const DEFAULT_PLACEMENTS = [["front", { label: "Front" }], ["back", { label: "Back" }]];
 
-export default function LogoTextPanel({ modelName }) {
+export default function LogoTextPanel({ modelName, embedded }) {
   const snap = useSnapshot(logoTextState);
   const fileRef = useRef();
   const padRef = useRef();
@@ -79,7 +79,7 @@ export default function LogoTextPanel({ modelName }) {
   };
 
   return (
-    <div className="logtext-panel">
+    <div className={embedded ? "logtext-panel-embedded" : "logtext-panel"}>
       {/* ── Placed items list ─────────────────────────────────── */}
       {snap.items.length > 0 && (
         <div className="logtext-items">

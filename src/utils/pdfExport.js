@@ -3,33 +3,11 @@ import { getTotal, getSelectedSummary } from "../config/customOptionsState";
 import { modelConfig } from "../config/models";
 
 /**
- * Capture canvas screenshot as data URL.
- */
-function captureCanvas() {
-  const canvas = document.querySelector("canvas");
-  if (!canvas) return null;
-  try {
-    return canvas.toDataURL("image/png");
-  } catch (_) {
-    return null;
-  }
-}
-
-/**
- * Wait for next animation frame + a small delay for render to complete.
- */
-function waitFrame(ms = 100) {
-  return new Promise((resolve) => {
-    requestAnimationFrame(() => setTimeout(resolve, ms));
-  });
-}
-
-/**
- * Generate a PDF summary with front & back views of the product.
+ * Generate a PDF summary with user-captured views of the product.
  * @param {string} modelName
- * @param {object} controlsRef — ref to OrbitControls (controls.current)
+ * @param {Array} views — array of { label, dataURL } captured by the user
  */
-export async function exportPDF(modelName, controlsRef) {
+export function exportPDF(modelName, views) {
   const cfg = modelConfig[modelName]?.customOptions;
   if (!cfg?.enabled) return;
 
@@ -47,59 +25,73 @@ export async function exportPDF(modelName, controlsRef) {
   doc.text(`${modelName} — Custom Configuration`, pageW / 2, y, { align: "center" });
   y += 12;
 
-  // Calculate proper image dimensions from canvas aspect ratio
-  const canvas = document.querySelector("canvas");
-  const maxImgW = 80;
-  let imgW = maxImgW;
-  let imgH = 60;
-  if (canvas) {
-    const aspect = canvas.width / canvas.height;
-    imgH = maxImgW / aspect;
-  }
+  // Render captured views
+  const imgs = views || [];
+  if (imgs.length > 0) {
+    // Calculate image dimensions from first image's aspect ratio
+    const canvas = document.querySelector("canvas");
+    let aspect = 4 / 3;
+    if (canvas) aspect = canvas.width / canvas.height;
 
-  // Capture front view
-  const frontImg = captureCanvas();
+    if (imgs.length === 1) {
+      // Single image — large centered
+      const imgW = 140;
+      const imgH = imgW / aspect;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(120);
+      doc.text(imgs[0].label, pageW / 2, y, { align: "center" });
+      y += 4;
+      doc.addImage(imgs[0].dataURL, "PNG", (pageW - imgW) / 2, y, imgW, imgH);
+      y += imgH + 8;
+    } else if (imgs.length === 2) {
+      // Two images — side by side
+      const imgW = 82;
+      const imgH = imgW / aspect;
+      const gap = 6;
+      const startX = (pageW - (imgW * 2 + gap)) / 2;
 
-  // Capture back view by rotating camera
-  let backImg = null;
-  if (controlsRef) {
-    const savedAzimuthal = controlsRef.getAzimuthalAngle();
-    const savedPolar = controlsRef.getPolarAngle();
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(120);
+      doc.text(imgs[0].label, startX + imgW / 2, y, { align: "center" });
+      doc.text(imgs[1].label, startX + imgW + gap + imgW / 2, y, { align: "center" });
+      y += 4;
+      doc.addImage(imgs[0].dataURL, "PNG", startX, y, imgW, imgH);
+      doc.addImage(imgs[1].dataURL, "PNG", startX + imgW + gap, y, imgW, imgH);
+      y += imgH + 8;
+    } else {
+      // 3+ images — grid of 2 per row
+      const imgW = 82;
+      const imgH = imgW / aspect;
+      const gap = 6;
+      const startX = (pageW - (imgW * 2 + gap)) / 2;
 
-    // Rotate to back (π radians from current)
-    controlsRef.setAzimuthalAngle(savedAzimuthal + Math.PI);
-    controlsRef.update();
-    await waitFrame(200);
+      for (let i = 0; i < imgs.length; i += 2) {
+        // Labels
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(120);
+        doc.text(imgs[i].label, startX + imgW / 2, y, { align: "center" });
+        if (imgs[i + 1]) {
+          doc.text(imgs[i + 1].label, startX + imgW + gap + imgW / 2, y, { align: "center" });
+        }
+        y += 4;
 
-    backImg = captureCanvas();
+        doc.addImage(imgs[i].dataURL, "PNG", startX, y, imgW, imgH);
+        if (imgs[i + 1]) {
+          doc.addImage(imgs[i + 1].dataURL, "PNG", startX + imgW + gap, y, imgW, imgH);
+        }
+        y += imgH + 6;
 
-    // Restore original camera position
-    controlsRef.setAzimuthalAngle(savedAzimuthal);
-    controlsRef.setPolarAngle(savedPolar);
-    controlsRef.update();
-  }
-
-  // Add images side by side
-  if (frontImg && backImg) {
-    const gap = 6;
-    const totalW = imgW * 2 + gap;
-    const startX = (pageW - totalW) / 2;
-
-    // Labels
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(120);
-    doc.text("Front", startX + imgW / 2, y, { align: "center" });
-    doc.text("Back", startX + imgW + gap + imgW / 2, y, { align: "center" });
-    y += 4;
-
-    doc.addImage(frontImg, "PNG", startX, y, imgW, imgH);
-    doc.addImage(backImg, "PNG", startX + imgW + gap, y, imgW, imgH);
-    y += imgH + 8;
-  } else if (frontImg) {
-    // Single image centered
-    doc.addImage(frontImg, "PNG", (pageW - imgW) / 2, y, imgW, imgH);
-    y += imgH + 8;
+        // Page break if running out of space
+        if (y > 250 && i + 2 < imgs.length) {
+          doc.addPage();
+          y = 20;
+        }
+      }
+      y += 2;
+    }
   }
 
   doc.setTextColor(0);

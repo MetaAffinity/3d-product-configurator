@@ -33,6 +33,7 @@ src/
     LogoTextPanel.jsx           — Logo/text editor panel (multi-overlay)
     LogoTextOverlay.jsx         — 3D decal renderer (multiple items)
     CustomOptionsPanel.jsx      — Custom options & pricing panel (per-model)
+    AnnotationCanvas.jsx        — Canvas drawing modal for annotating captured views
     ModelPicker.jsx             — Top bar model selector thumbnails
     ColorPicker.jsx             — Right panel: color swatches + pattern thumbnails
     PartsPicker.jsx             — Left panel: clickable parts + option toggles
@@ -41,7 +42,11 @@ src/
     patterns.js                 — Texture patterns per model per part
     swatches.js                 — Predefined color swatches per model per part
     logoTextState.js            — Multi-overlay logo/text state (items array, per-model)
-    customOptionsState.js       — Custom options selections state (per-model save/restore)
+    customOptionsState.js       — Custom options selections state (per-model save/restore, undo/redo)
+  utils/
+    pdfExport.js                — PDF generation (jsPDF + branding + QR code)
+    shareLink.js                — URL encode/decode for shareable configuration links
+    createTextTexture.js        — Canvas text renderer for logo/text overlays
   img/                          — Thumbnail images for model picker
 
 public/
@@ -679,6 +684,22 @@ MyModel: {
     enabled: true,        // master toggle — set false to disable without removing config
     currency: "USD",      // currency label shown in UI and PDF
     basePrice: 25.00,     // starting price before options
+
+    // Company branding — shown at top of PDF
+    branding: {
+      companyName: "Your Brand",        // company name in PDF header
+      tagline: "Premium Custom Products", // tagline below company name
+      // logoUrl: "/logo.png",          // optional — base64 or URL to company logo
+    },
+
+    // Toggleable features — set false to hide from UI
+    features: {
+      qrCode: true,        // QR code in PDF linking to shareable config URL
+      undoRedo: true,       // Undo/Redo buttons for option changes
+      annotations: true,   // Draw annotations on captured views
+      shareLink: true,     // "Copy Share Link" button
+    },
+
     groups: [
       // Select group — user picks one option from a list
       {
@@ -808,15 +829,81 @@ All PDF layout is controlled in `src/utils/pdfExport.js`. Key values to modify:
 - **Draw shapes/borders**: `doc.rect(x, y, w, h)`, `doc.line(x1, y1, x2, y2)`
 - **Change crop shape**: Edit `captureCanvas()` in `CustomOptionsPanel.jsx` — modify `cropSize` calculation for different aspect ratios
 
+### Branding (PDF header)
+
+The `branding` object in `customOptions` controls what appears at the top of the PDF:
+
+- **`companyName`** — Large bold text at the very top (22pt)
+- **`tagline`** — Smaller grey text below the company name (10pt)
+- **`logoUrl`** (optional) — Path or base64 data URL for a company logo image. Load and add via `doc.addImage()` in `pdfExport.js`
+
+To remove branding from PDF, either omit the `branding` object or set both fields to empty strings.
+
+### Toggleable features
+
+Each feature in the `features` object can be independently enabled (`true`) or disabled (`false`):
+
+| Feature | Config key | What it does |
+|---------|-----------|--------------|
+| QR Code | `features.qrCode` | Adds a QR code to the PDF that links to a shareable URL with the full configuration |
+| Undo/Redo | `features.undoRedo` | Shows Undo/Redo buttons above option groups. Tracks up to 50 history entries |
+| Annotations | `features.annotations` | Adds an edit icon on captured view thumbnails. Click to open a drawing canvas with pen, eraser, colors, undo |
+| Share Link | `features.shareLink` | Shows a "Copy Share Link" button. Generates a URL with model + colors + selections encoded as base64 |
+
+To disable a feature, set it to `false`:
+```js
+features: {
+  qrCode: false,      // no QR in PDF
+  undoRedo: true,      // keep undo/redo
+  annotations: false,  // no drawing on views
+  shareLink: true,     // keep share button
+},
+```
+
+### Share link URL format
+
+The share link encodes configuration as a base64 JSON in the `?config=` URL parameter:
+```
+https://yoursite.com/?config=eyJtIjoiUG9sb1NoaXJ0IiwiYyI6ey4uLn0sInMiOnsic...
+```
+
+The JSON payload contains:
+- `m` — model name
+- `c` — colors object (all part colors)
+- `s` — custom options selections
+
+On page load, `loadFromURL()` in `src/utils/shareLink.js` checks for this parameter, applies the configuration, and cleans the URL.
+
+### Undo/Redo internals
+
+The undo/redo system is in `src/config/customOptionsState.js`:
+- `_history[]` — past selection snapshots (max 50)
+- `_future[]` — redo snapshots (cleared on new action)
+- `setOption()` — automatically pushes current state to history before changing
+- `undoOption()` — pops from history, pushes current to future
+- `redoOption()` — pops from future, pushes current to history
+
+### Annotation canvas
+
+The annotation modal (`src/Components/AnnotationCanvas.jsx`) provides:
+- Drawing on captured view images
+- 6 preset pen colors (red, blue, green, orange, black, white)
+- Adjustable pen size (1–12px)
+- Eraser mode
+- Undo (step-by-step history)
+- Save replaces the original capture with the annotated version
+
 ### Key files
 
 | File | Purpose |
 |------|---------|
-| `src/config/models.js` | `customOptions` config per model (prices, groups, currency) |
-| `src/config/customOptionsState.js` | Valtio proxy state — selections, per-model save/restore |
-| `src/Components/CustomOptionsPanel.jsx` | UI panel — option cards, toggles, total, PDF button |
-| `src/utils/pdfExport.js` | PDF generation with jsPDF |
-| `src/App.js` | Toggle button, panel rendering, model switch integration |
+| `src/config/models.js` | `customOptions` config per model (prices, groups, branding, features) |
+| `src/config/customOptionsState.js` | Valtio proxy state — selections, undo/redo, per-model save/restore |
+| `src/Components/CustomOptionsPanel.jsx` | UI panel — option cards, toggles, total, undo/redo, share, PDF |
+| `src/Components/AnnotationCanvas.jsx` | Canvas drawing modal for annotating captured views |
+| `src/utils/pdfExport.js` | PDF generation with jsPDF + QR code via `qrcode` |
+| `src/utils/shareLink.js` | URL encoding/decoding for shareable configuration links |
+| `src/App.js` | Toggle button, panel rendering, model switch, URL config loading |
 
 ---
 
@@ -885,9 +972,11 @@ Both `LogoTextPanel` and `CustomOptionsPanel` accept an `embedded` prop:
 | `public/[model]/` | GLB file + pattern images | Updating the 3D model or designs |
 | `src/config/logoTextState.js` | Logo/text overlay state | Changing logo/text state fields |
 | `src/config/customOptionsState.js` | Custom options proxy state | Changing option selection logic |
-| `src/utils/pdfExport.js` | PDF export (jsPDF) | Changing PDF layout or content |
+| `src/utils/pdfExport.js` | PDF export (jsPDF + QR) | Changing PDF layout, branding, or QR |
+| `src/utils/shareLink.js` | Share link URL encode/decode | Changing what's encoded in share URLs |
 | `src/utils/createTextTexture.js` | Canvas text renderer | Changing text rendering logic |
 | `src/Components/CustomOptionsPanel.jsx` | Custom options UI panel | Adding UI features to options |
+| `src/Components/AnnotationCanvas.jsx` | Annotation drawing modal | Changing drawing tools or behavior |
 | `src/Components/LogoTextPanel.jsx` | Logo/text UI panel | Adding fonts, UI controls |
 | `src/Components/LogoTextOverlay.jsx` | 3D overlay plane | Changing how overlay renders |
 | `public/index.html` | Google Fonts links | Adding new fonts |

@@ -1,4 +1,4 @@
-import React, { Suspense, useState, useRef, useCallback } from "react";
+import React, { Suspense, useState, useRef, useCallback, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Float } from "@react-three/drei";
 import { useSnapshot } from "valtio";
@@ -13,6 +13,7 @@ import CustomOptionsPanel from "./Components/CustomOptionsPanel";
 import { modelConfig, modelStates, defaultModel } from "./config/models";
 import { switchLogoTextModel } from "./config/logoTextState";
 import { switchCustomOptionsModel } from "./config/customOptionsState";
+import { loadFromURL } from "./utils/shareLink";
 import { AiOutlineUser } from "react-icons/ai";
 import { MdTextFields, MdTune, MdClose } from "react-icons/md";
 
@@ -30,6 +31,17 @@ function App() {
   const config = modelConfig[selectedModel];
   // Subscribe to design changes so design prop stays reactive
   const { design: activeDesign, designColor: activeDesignColor } = useSnapshot(state);
+
+  // Load shared configuration from URL on mount
+  useEffect(() => {
+    const sharedModel = loadFromURL();
+    if (sharedModel && sharedModel !== selectedModel) {
+      switchLogoTextModel(sharedModel);
+      switchCustomOptionsModel(sharedModel);
+      setSelectedModel(sharedModel);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateCurrent = useCallback((value) => {
     state.current = value;

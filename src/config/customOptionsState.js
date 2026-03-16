@@ -26,13 +26,63 @@ export const customOptionsState = proxy({
   selections: { ...perModel[firstModel] },
   _currentModel: firstModel,
   _perModel: perModel,
+  _history: [],
+  _future: [],
 });
 
 /**
- * Set an option value.
+ * Push current selections onto the undo history stack.
+ */
+function pushHistory() {
+  customOptionsState._history.push({ ...customOptionsState.selections });
+  // Clear redo stack on new action
+  customOptionsState._future.length = 0;
+  // Limit history to 50 entries
+  if (customOptionsState._history.length > 50) {
+    customOptionsState._history.shift();
+  }
+}
+
+/**
+ * Set an option value (with undo history tracking).
  */
 export function setOption(groupKey, value) {
+  pushHistory();
   customOptionsState.selections[groupKey] = value;
+}
+
+/**
+ * Undo the last option change.
+ */
+export function undoOption() {
+  if (customOptionsState._history.length === 0) return;
+  // Save current state to future
+  customOptionsState._future.push({ ...customOptionsState.selections });
+  // Restore previous state
+  const prev = customOptionsState._history.pop();
+  Object.keys(customOptionsState.selections).forEach((k) => {
+    delete customOptionsState.selections[k];
+  });
+  Object.entries(prev).forEach(([k, v]) => {
+    customOptionsState.selections[k] = v;
+  });
+}
+
+/**
+ * Redo the last undone option change.
+ */
+export function redoOption() {
+  if (customOptionsState._future.length === 0) return;
+  // Save current state to history
+  customOptionsState._history.push({ ...customOptionsState.selections });
+  // Restore future state
+  const next = customOptionsState._future.pop();
+  Object.keys(customOptionsState.selections).forEach((k) => {
+    delete customOptionsState.selections[k];
+  });
+  Object.entries(next).forEach(([k, v]) => {
+    customOptionsState.selections[k] = v;
+  });
 }
 
 /**

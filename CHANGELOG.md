@@ -6,6 +6,28 @@ For full developer instructions (how to add models, patterns, options), see **[D
 
 ---
 
+## [v1.2.3.4] - 2026-03-17
+
+### Added
+- **Company branding in PDF** — PDF now includes company name and tagline header above the product title. Configured via `branding.companyName` and `branding.tagline` in `customOptions`.
+- **QR code in PDF** (configurable) — A QR code is generated in the PDF linking to a shareable URL with the full configuration (model, colors, options). Enable/disable via `features.qrCode`.
+- **Undo/Redo for option changes** (configurable) — Undo and redo buttons above option groups let users step back/forward through option selections. History stack of up to 50 entries. Enable/disable via `features.undoRedo`.
+- **Animated price transitions** — The total price now smoothly animates (ease-out cubic, 350ms) when options change instead of jumping instantly.
+- **Image annotations** (configurable) — Users can draw on captured views before adding them to the PDF. Click the edit icon on a thumbnail to open a drawing canvas with pen colors, size control, eraser, and undo. Enable/disable via `features.annotations`.
+- **Share link** (configurable) — "Copy Share Link" button generates a URL encoding the current model, colors, and option selections. Opening the link auto-applies the configuration. Enable/disable via `features.shareLink`.
+
+### Technical
+- `src/utils/shareLink.js` — URL encoding/decoding of configuration (model + colors + selections as base64).
+- `src/Components/AnnotationCanvas.jsx` — Canvas-based annotation modal with drawing tools.
+- `src/config/customOptionsState.js` — Added `undoOption()`, `redoOption()` with history/future stacks.
+- `src/utils/pdfExport.js` — Now async. Added branding header and QR code generation via `qrcode` package.
+- `src/config/models.js` — Added `branding` and `features` config objects to PoloShirt and Hoodie `customOptions`.
+- `src/App.js` — Loads shared configuration from URL on mount via `loadFromURL()`.
+- `src/index.scss` — Styles for undo/redo, share link, annotation modal, animated total.
+- `package.json` — Added `qrcode` dependency.
+
+---
+
 ## [v1.2.3.3] - 2026-03-16
 
 ### Added
@@ -282,3 +304,5 @@ For full developer instructions (how to add models, patterns, options), see **[D
 | `v1.2.2.2` | PoloShirt model, texture patterns, back strap toggle, per-model camera/zoom |
 | `v1.2.3` | Logo/text overlay, rotation, position pad, per-model state, product-specific placements |
 | `v1.2.3.1` | HighNeck TShirt model, design presets, design color, multi-logo/text support |
+| `v1.2.3.3` | Custom options, pricing, PDF export, offcanvas drawer |
+| `v1.2.3.4` | Branding, QR code, undo/redo, annotations, share link, animated price |

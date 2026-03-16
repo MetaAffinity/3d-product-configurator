@@ -1,27 +1,53 @@
 import { jsPDF } from "jspdf";
+import QRCode from "qrcode";
 import { getTotal, getSelectedSummary } from "../config/customOptionsState";
 import { modelConfig } from "../config/models";
+import { generateShareURL } from "./shareLink";
 
 /**
  * Generate a PDF summary with user-captured views of the product.
  * @param {string} modelName
  * @param {Array} views — array of { label, dataURL } captured by the user
  */
-export function exportPDF(modelName, views) {
+export async function exportPDF(modelName, views) {
   const cfg = modelConfig[modelName]?.customOptions;
   if (!cfg?.enabled) return;
 
   const summary = getSelectedSummary(modelName);
   const total = getTotal(modelName);
   const currency = cfg.currency || "USD";
+  const branding = cfg.branding || {};
+  const features = cfg.features || {};
 
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   let y = 20;
 
+  // ── Branding header ──────────────────────────────────────────────
+  if (branding.companyName) {
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(40);
+    doc.text(branding.companyName, pageW / 2, y, { align: "center" });
+    y += 7;
+  }
+  if (branding.tagline) {
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120);
+    doc.text(branding.tagline, pageW / 2, y, { align: "center" });
+    y += 6;
+  }
+  if (branding.companyName || branding.tagline) {
+    doc.setDrawColor(200);
+    doc.line(30, y, pageW - 30, y);
+    y += 8;
+  }
+
   // Title
-  doc.setFontSize(20);
+  doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
+  doc.setTextColor(0);
   doc.text(`${modelName} — Custom Configuration`, pageW / 2, y, { align: "center" });
   y += 12;
 
@@ -135,6 +161,35 @@ export function exportPDF(modelName, views) {
   doc.text("Total:", 20, y);
   doc.text(`${currency} ${total.toFixed(2)}`, pageW - 20, y, { align: "right" });
   y += 12;
+
+  // ── QR Code ──────────────────────────────────────────────────────
+  if (features.qrCode) {
+    try {
+      const shareURL = generateShareURL(modelName);
+      const qrDataURL = await QRCode.toDataURL(shareURL, {
+        width: 200,
+        margin: 1,
+        color: { dark: "#333333", light: "#ffffff" },
+      });
+
+      // Check if we need a page break for QR
+      if (y > 240) {
+        doc.addPage();
+        y = 20;
+      }
+
+      const qrSize = 30;
+      doc.addImage(qrDataURL, "PNG", (pageW - qrSize) / 2, y, qrSize, qrSize);
+      y += qrSize + 4;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(120);
+      doc.text("Scan to view this configuration", pageW / 2, y, { align: "center" });
+      y += 8;
+    } catch (_) {
+      // QR generation failed — skip silently
+    }
+  }
 
   // Timestamp
   doc.setFontSize(9);

@@ -1,13 +1,17 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useSnapshot } from "valtio";
 import { modelConfig } from "../config/models";
 import {
   customOptionsState,
   setOption,
   getTotal,
+  undoOption,
+  redoOption,
 } from "../config/customOptionsState";
 import { exportPDF } from "../utils/pdfExport";
-import { MdAddAPhoto, MdClose } from "react-icons/md";
+import { generateShareURL } from "../utils/shareLink";
+import AnnotationCanvas from "./AnnotationCanvas";
+import { MdAddAPhoto, MdClose, MdUndo, MdRedo, MdShare, MdEdit } from "react-icons/md";
 
 function captureCanvas() {
   const canvas = document.querySelector("canvas");
@@ -31,10 +35,50 @@ function captureCanvas() {
   }
 }
 
+/**
+ * Hook for animated number transitions.
+ */
+function useAnimatedValue(target, duration = 350) {
+  const [display, setDisplay] = useState(target);
+  const rafRef = useRef(null);
+  const startRef = useRef({ value: target, time: 0 });
+
+  useEffect(() => {
+    const startVal = display;
+    if (startVal === target) return;
+    startRef.current = { value: startVal, time: performance.now() };
+
+    const animate = (now) => {
+      const elapsed = now - startRef.current.time;
+      const t = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const ease = 1 - Math.pow(1 - t, 3);
+      const current = startRef.current.value + (target - startRef.current.value) * ease;
+      setDisplay(current);
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      } else {
+        setDisplay(target);
+      }
+    };
+    rafRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, duration]);
+
+  return display;
+}
+
 export default function CustomOptionsPanel({ modelName, embedded }) {
   const snap = useSnapshot(customOptionsState);
   const cfg = modelConfig[modelName]?.customOptions;
   const [extraViews, setExtraViews] = useState([]);
+  const [copied, setCopied] = useState(false);
+  const [annotatingIndex, setAnnotatingIndex] = useState(null);
+
+  const features = cfg?.features || {};
 
   const captureView = useCallback(() => {
     const dataURL = captureCanvas();
@@ -62,14 +106,61 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
     exportPDF(modelName, allViews);
   }, [modelName, extraViews]);
 
-  if (!cfg?.enabled) return null;
+  const handleShare = useCallback(() => {
+    const url = generateShareURL(modelName);
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      // Fallback: prompt
+      window.prompt("Copy this link:", url);
+    });
+  }, [modelName]);
 
-  const currency = cfg.currency || "USD";
-  const total = getTotal(modelName);
+  const handleAnnotationSave = useCallback((annotatedDataURL) => {
+    setExtraViews((prev) =>
+      prev.map((view, i) =>
+        i === annotatingIndex ? { ...view, dataURL: annotatedDataURL } : view
+      )
+    );
+    setAnnotatingIndex(null);
+  }, [annotatingIndex]);
+
+  const currency = cfg?.currency || "USD";
+  const total = cfg?.enabled ? getTotal(modelName) : 0;
+  const animatedTotal = useAnimatedValue(total);
+  const canUndo = snap._history.length > 0;
+  const canRedo = snap._future.length > 0;
+
+  if (!cfg?.enabled) return null;
 
   return (
     <div className={embedded ? "custom-options-embedded" : "custom-options-panel"}>
       {!embedded && <h3>Customize Options</h3>}
+
+      {/* Undo/Redo bar */}
+      {features.undoRedo && (
+        <div className="co-undo-redo">
+          <button
+            className="co-undo-btn"
+            onClick={undoOption}
+            disabled={!canUndo}
+            title="Undo"
+          >
+            <MdUndo size={16} />
+            <span>Undo</span>
+          </button>
+          <button
+            className="co-redo-btn"
+            onClick={redoOption}
+            disabled={!canRedo}
+            title="Redo"
+          >
+            <MdRedo size={16} />
+            <span>Redo</span>
+          </button>
+        </div>
+      )}
 
       {cfg.groups.map((group, idx) => (
         <div key={group.key} className="co-group" style={embedded ? { animationDelay: `${idx * 0.08}s` } : undefined}>
@@ -112,10 +203,20 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
 
       <div className="co-total">
         <span>Total</span>
-        <span className="co-total-price">{currency} {total.toFixed(2)}</span>
+        <span className="co-total-price co-total-animated">
+          {currency} {animatedTotal.toFixed(2)}
+        </span>
       </div>
 
       <div className="co-divider" />
+
+      {/* Share Link */}
+      {features.shareLink && (
+        <button className="co-share-btn" onClick={handleShare}>
+          <MdShare size={15} />
+          <span>{copied ? "Link Copied!" : "Copy Share Link"}</span>
+        </button>
+      )}
 
       {/* Custom Views Section */}
       <label className="co-group-label">Additional Views (optional)</label>
@@ -131,6 +232,15 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
             <div key={i} className="co-view-thumb">
               <img src={view.dataURL} alt={view.label} />
               <span className="co-view-label">{view.label}</span>
+              {features.annotations && (
+                <button
+                  className="co-view-annotate"
+                  onClick={() => setAnnotatingIndex(i)}
+                  title="Annotate"
+                >
+                  <MdEdit size={10} />
+                </button>
+              )}
               <button className="co-view-remove" onClick={() => removeView(i)}>
                 <MdClose size={12} />
               </button>
@@ -143,6 +253,15 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
         Download PDF
         {extraViews.length > 0 && ` (1 + ${extraViews.length} views)`}
       </button>
+
+      {/* Annotation Modal */}
+      {annotatingIndex !== null && extraViews[annotatingIndex] && (
+        <AnnotationCanvas
+          imageDataURL={extraViews[annotatingIndex].dataURL}
+          onSave={handleAnnotationSave}
+          onCancel={() => setAnnotatingIndex(null)}
+        />
+      )}
     </div>
   );
 }

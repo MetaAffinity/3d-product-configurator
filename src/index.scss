@@ -1120,6 +1120,97 @@ code {
     }
   }
 
+  // ── Undo/Redo buttons ─────────────────────────────────────────────
+  .co-undo-redo {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .co-undo-btn,
+  .co-redo-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px;
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    background: transparent;
+    font-size: 12px;
+    font-family: inherit;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.05);
+      color: #222;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+
+  // ── Share Link button ─────────────────────────────────────────────
+  .co-share-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    background: transparent;
+    font-size: 12px;
+    font-family: inherit;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: #222;
+      border-color: rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  // ── Annotate button on thumbnails ─────────────────────────────────
+  .co-view-annotate {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 100, 200, 0.7);
+    color: #fff;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .co-view-thumb:hover .co-view-annotate {
+    opacity: 1;
+  }
+
+  // ── Animated total price ──────────────────────────────────────────
+  .co-total-animated {
+    transition: color 0.15s ease;
+    font-variant-numeric: tabular-nums;
+  }
+
   .toggle-switch {
     width: 38px;
     height: 20px;
@@ -1217,5 +1308,194 @@ code {
     cursor: pointer;
     top: 0;
     left: 0;
+  }
+}
+
+// ── Annotation Canvas Modal ────────────────────────────────────────────
+.annotation-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.annotation-modal {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.annotation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.annotation-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+.annotation-close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #888;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #333;
+  }
+}
+
+.annotation-canvas-wrap {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: #f5f5f5;
+}
+
+.annotation-canvas {
+  max-width: 100%;
+  max-height: 55vh;
+  border-radius: 6px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.annotation-tools {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.annotation-colors {
+  display: flex;
+  gap: 6px;
+}
+
+.annotation-color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.active {
+    border-color: #333;
+    transform: scale(1.15);
+  }
+}
+
+.annotation-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.annotation-tool-btn {
+  padding: 5px 10px;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 12px;
+  font-family: inherit;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  &.active {
+    background: #333;
+    color: #fff;
+    border-color: #333;
+  }
+}
+
+.annotation-size-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #555;
+}
+
+.annotation-size-slider {
+  width: 80px;
+  accent-color: #333;
+}
+
+.annotation-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.annotation-cancel-btn {
+  padding: 7px 16px;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 12px;
+  font-family: inherit;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
+.annotation-save-btn {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #333;
+  color: #fff;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #555;
   }
 }

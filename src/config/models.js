@@ -177,6 +177,17 @@ const modelConfig = {
       enabled: true,
       currency: "USD",
       basePrice: 25.00,
+      branding: {
+        companyName: "Your Brand",
+        tagline: "Premium Custom Products",
+        // logoUrl: "/logo.png",  // optional — base64 or URL to company logo
+      },
+      features: {
+        qrCode: true,        // QR code in PDF linking to shareable config
+        undoRedo: true,       // Undo/Redo buttons for option changes
+        annotations: true,   // Draw annotations on captured views
+        shareLink: true,     // Copy shareable link button
+      },
       groups: [
         {
           key: "logoType", label: "Logo Type", type: "select",
@@ -279,6 +290,16 @@ const modelConfig = {
       enabled: true,
       currency: "USD",
       basePrice: 35.00,
+      branding: {
+        companyName: "Your Brand",
+        tagline: "Premium Custom Products",
+      },
+      features: {
+        qrCode: true,
+        undoRedo: true,
+        annotations: true,
+        shareLink: true,
+      },
       groups: [
         {
           key: "logoType", label: "Logo Type", type: "select",

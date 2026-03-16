@@ -21,6 +21,8 @@ For full developer instructions (how to add models, patterns, options), see **[D
 
 ### Fixed
 - **Decal text bleeding through** — Text placed on the back was visible from the front due to `depthTest: false`. Fixed by enabling depth testing on decal materials.
+- **PDF product images too small** — Canvas is wide (full screen) so product looked tiny. Now captures are center-cropped to a square, removing excess whitespace. Product fills more of the PDF image.
+- **Canvas interaction while Options panel open** — Removed backdrop for custom options drawer so users can rotate model to capture different angles.
 
 ### Technical
 - `src/config/customOptionsState.js` — Valtio proxy for custom option selections with per-model save/restore.

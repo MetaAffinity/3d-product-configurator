@@ -754,13 +754,77 @@ For **toggle** groups: the price is added only when the toggle is on.
 ### PDF export
 
 The "Download PDF" button generates an A4 PDF containing:
-- Product name and screenshot (captured from the 3D canvas)
+- Product name as title
+- **Front + Back views** — side by side screenshots (camera rotates 180° for back, then restores)
 - Base price
 - Table of all selected options with their prices
 - Calculated total
 - Timestamp
 
-PDF is generated client-side using jsPDF — no server needed.
+PDF is generated **client-side** using [jsPDF](https://github.com/parallax/jsPDF) — no server needed.
+
+**File:** `src/utils/pdfExport.js`
+
+#### PDF layout settings (how to customize)
+
+All PDF layout is controlled in `src/utils/pdfExport.js`. Key values to modify:
+
+| Setting | Line/Variable | Default | Description |
+|---------|--------------|---------|-------------|
+| Page format | `new jsPDF({ format: "a4" })` | A4 portrait | Change to `"letter"`, `"a3"`, or `[width, height]` in mm |
+| Page orientation | `orientation: "portrait"` | Portrait | Change to `"landscape"` for wider layout |
+| Image width | `maxImgW = 80` | 80mm per image | Each view (front/back) is this wide. Increase for larger images |
+| Image aspect ratio | Auto-calculated | Canvas ratio | `imgH = maxImgW / aspect` — height auto-scales from canvas |
+| Image gap | `gap = 6` | 6mm | Space between front and back images |
+| Back view delay | `waitFrame(200)` | 200ms | Wait time after rotating camera before capturing (increase if back image is blank) |
+| Title font size | `doc.setFontSize(20)` | 20pt | Product name heading |
+| Options font size | `doc.setFontSize(11)` | 11pt | Option rows text |
+| Total font size | `doc.setFontSize(14)` | 14pt | Total price text |
+| Filename | `doc.save(...)` | `{ModelName}-configuration.pdf` | Downloaded file name |
+| Margins | `20` (left), `pageW - 20` (right) | 20mm | Padding from page edges |
+
+#### How the front + back capture works
+
+1. Current canvas is captured as "Front" view
+2. Camera rotates +180° (π radians) via `controlsRef.setAzimuthalAngle()`
+3. Waits 200ms for the render to complete (`waitFrame(200)`)
+4. Captures canvas again as "Back" view
+5. Camera restores to original position
+6. Both images are placed side by side with "Front" / "Back" labels
+
+The `controlsRef` (OrbitControls reference) is passed from `App.js` → `CustomOptionsPanel` → `exportPDF()`. If controls are unavailable, only the front view is shown.
+
+#### How to add more views (e.g. left, right)
+
+In `exportPDF()`, after the back capture block, add more rotations:
+
+```js
+// Capture left view
+controlsRef.setAzimuthalAngle(savedAzimuthal + Math.PI / 2);
+controlsRef.update();
+await waitFrame(200);
+const leftImg = captureCanvas();
+
+// Capture right view
+controlsRef.setAzimuthalAngle(savedAzimuthal - Math.PI / 2);
+controlsRef.update();
+await waitFrame(200);
+const rightImg = captureCanvas();
+
+// Restore
+controlsRef.setAzimuthalAngle(savedAzimuthal);
+controlsRef.update();
+```
+
+Then add them to the PDF layout with `doc.addImage()`.
+
+#### How to change PDF content
+
+- **Add custom text/branding**: Use `doc.text("Your text", x, y)` — see [jsPDF docs](https://artskydj.github.io/jsPDF/docs/jsPDF.html)
+- **Add logo image**: `doc.addImage(logoDataURL, "PNG", x, y, w, h)` — load logo as base64 or data URL
+- **Change fonts**: `doc.setFont("helvetica", "bold")` — jsPDF supports helvetica, courier, times by default. For custom fonts, use `doc.addFont()`
+- **Add page break**: `doc.addPage()` — for multi-page PDFs
+- **Draw shapes/borders**: `doc.rect(x, y, w, h)`, `doc.line(x1, y1, x2, y2)`
 
 ### Key files
 

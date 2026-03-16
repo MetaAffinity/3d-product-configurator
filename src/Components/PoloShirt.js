@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useGLTF, useTexture } from "@react-three/drei";
+import { useGLTF, useTexture, meshBounds } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { sRGBEncoding } from "three";
 import { modelPatterns } from "../config/patterns";
@@ -105,9 +105,9 @@ export default function PoloShirt({ colors, options, textures, updateCurrent }) 
       onPointerMissed={onPointerMissed}
     >
       <group name="Polo" position={[0.084, -4.801, -0.214]} scale={0.006}>
-        <mesh castShadow material-color={texturesSnap.body ? "#ffffff" : snap.body} geometry={nodes.cloth_shape_0008.geometry} material={mats.body} />
-        <mesh castShadow material-color={snap.buttons} geometry={nodes.cloth_shape_0008_1.geometry} material={mats.buttons} />
-        <mesh castShadow material-color={snap.sleeves} geometry={nodes.cloth_shape_0008_2.geometry} material={mats.sleeves} />
+        <mesh castShadow raycast={meshBounds} material-color={texturesSnap.body ? "#ffffff" : snap.body} geometry={nodes.cloth_shape_0008.geometry} material={mats.body} />
+        <mesh castShadow raycast={meshBounds} material-color={snap.buttons} geometry={nodes.cloth_shape_0008_1.geometry} material={mats.buttons} />
+        <mesh castShadow raycast={meshBounds} material-color={snap.sleeves} geometry={nodes.cloth_shape_0008_2.geometry} material={mats.sleeves} />
       </group>
     </group>
   );

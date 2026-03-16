@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useGLTF, useTexture } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { sRGBEncoding } from "three";
@@ -12,6 +12,7 @@ export default function PoloShirt({ colors, options, textures, updateCurrent }) 
   const snap = useSnapshot(colors);
   const texturesSnap = useSnapshot(textures);
   const [hovered, setHovered] = useState(null);
+  const hoveredRef = useRef(null);
 
   // Clone materials so each part colors independently
   const mats = useMemo(() => {
@@ -57,23 +58,51 @@ export default function PoloShirt({ colors, options, textures, updateCurrent }) 
     }
   }, [texturesSnap.body, mats.body, patternArray, originalBodyMap]);
 
+  // Cursor SVG — only rebuild when hovered part or its color changes
+  const hoveredColor = hovered ? snap[hovered] : null;
   useEffect(() => {
-    const cursor = `<svg width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0)"><path fill="rgba(255, 255, 255, 0.5)" d="M29.5 54C43.031 54 54 43.031 54 29.5S43.031 5 29.5 5 5 15.969 5 29.5 15.969 54 29.5 54z" stroke="#000"/><g filter="url(#filter0_d)"><path d="M29.5 47C39.165 47 47 39.165 47 29.5S39.165 12 29.5 12 12 19.835 12 29.5 19.835 47 29.5 47z" fill="${snap[hovered]}"/></g><path d="M2 2l11 2.947L4.947 13 2 2z" fill="#000"/><text fill="#000" style="white-space:pre" font-family="Inter var, sans-serif" font-size="10" letter-spacing="-.01em"><tspan x="35" y="63">${hovered}</tspan></text></g><defs><clipPath id="clip0"><path fill="#fff" d="M0 0h64v64H0z"/></clipPath><filter id="filter0_d" x="6" y="8" width="47" height="47" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/><feOffset dy="2"/><feGaussianBlur stdDeviation="3"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0"/><feBlend in2="BackgroundImageFix" result="effect1_dropShadow"/><feBlend in="SourceGraphic" in2="effect1_dropShadow" result="shape"/></filter></defs></svg>`;
-    if (hovered) {
-      document.body.style.cursor = `url('data:image/svg+xml;base64,${btoa(cursor)}'), auto`;
+    if (!hovered || !hoveredColor) {
+      document.body.style.cursor = "auto";
+      return;
     }
+    const cursor = `<svg width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0)"><path fill="rgba(255, 255, 255, 0.5)" d="M29.5 54C43.031 54 54 43.031 54 29.5S43.031 5 29.5 5 5 15.969 5 29.5 15.969 54 29.5 54z" stroke="#000"/><g filter="url(#filter0_d)"><path d="M29.5 47C39.165 47 47 39.165 47 29.5S39.165 12 29.5 12 12 19.835 12 29.5 19.835 47 29.5 47z" fill="${hoveredColor}"/></g><path d="M2 2l11 2.947L4.947 13 2 2z" fill="#000"/><text fill="#000" style="white-space:pre" font-family="Inter var, sans-serif" font-size="10" letter-spacing="-.01em"><tspan x="35" y="63">${hovered}</tspan></text></g><defs><clipPath id="clip0"><path fill="#fff" d="M0 0h64v64H0z"/></clipPath><filter id="filter0_d" x="6" y="8" width="47" height="47" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/><feOffset dy="2"/><feGaussianBlur stdDeviation="3"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0"/><feBlend in2="BackgroundImageFix" result="effect1_dropShadow"/><feBlend in="SourceGraphic" in2="effect1_dropShadow" result="shape"/></filter></defs></svg>`;
+    document.body.style.cursor = `url('data:image/svg+xml;base64,${btoa(cursor)}'), auto`;
     return () => (document.body.style.cursor = "auto");
-  }, [hovered, snap]);
+  }, [hovered, hoveredColor]);
+
+  // Stable pointer handlers — prevent re-renders on same value
+  const onPointerOver = useCallback((e) => {
+    e.stopPropagation();
+    const name = e.object.material.name;
+    if (hoveredRef.current !== name) {
+      hoveredRef.current = name;
+      setHovered(name);
+    }
+  }, []);
+
+  const onPointerOut = useCallback((e) => {
+    if (e.intersections.length === 0) {
+      hoveredRef.current = null;
+      setHovered(null);
+    }
+  }, []);
+
+  const onPointerDown = useCallback((e) => {
+    e.stopPropagation();
+    updateCurrent(e.object.material.name);
+  }, [updateCurrent]);
+
+  const onPointerMissed = useCallback(() => updateCurrent(null), [updateCurrent]);
 
   return (
     <group
       dispose={null}
       scale={[0.35, 0.35, 0.35]}
       position={[0, -1.0, 0]}
-      onPointerOver={(e) => { e.stopPropagation(); setHovered(e.object.material.name); }}
-      onPointerOut={(e) => { if (e.intersections.length === 0) setHovered(null); }}
-      onPointerDown={(e) => { e.stopPropagation(); updateCurrent(e.object.material.name); }}
-      onPointerMissed={() => updateCurrent(null)}
+      onPointerOver={onPointerOver}
+      onPointerOut={onPointerOut}
+      onPointerDown={onPointerDown}
+      onPointerMissed={onPointerMissed}
     >
       <group name="Polo" position={[0.084, -4.801, -0.214]} scale={0.006}>
         <mesh castShadow material-color={texturesSnap.body ? "#ffffff" : snap.body} geometry={nodes.cloth_shape_0008.geometry} material={mats.body} />

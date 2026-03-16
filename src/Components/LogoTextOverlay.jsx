@@ -281,7 +281,6 @@ function DecalItem({ overlay, cache }) {
       ref={(mesh) => {
         if (mesh) {
           mesh.renderOrder = 10;
-          if (mesh.material) mesh.material.depthTest = false;
         }
       }}
       position={localPos.toArray()}
@@ -293,7 +292,7 @@ function DecalItem({ overlay, cache }) {
         transparent
         alphaTest={0.5}
         depthWrite={false}
-        depthTest={false}
+        depthTest={true}
         roughness={0.85}
         metalness={0}
         polygonOffset

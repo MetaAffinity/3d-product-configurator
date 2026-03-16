@@ -857,19 +857,82 @@ features: {
 },
 ```
 
-### Share link URL format
+### Share link — how it works
 
-The share link encodes configuration as a base64 JSON in the `?config=` URL parameter:
+The share link feature lets users share their exact product configuration (model, colors, selected options) with anyone via a URL. **Everything is automatic** — no manual data entry required by the developer or user.
+
+#### How it works (automatic flow)
+
+1. User customizes the product (picks colors, selects options)
+2. User clicks **"Copy Share Link"** button in the options panel
+3. `generateShareURL()` in `src/utils/shareLink.js` automatically reads:
+   - Current model name from state
+   - All part colors from `modelStates[modelName].colors`
+   - All custom option selections from `customOptionsState.selections`
+4. Packs everything into a JSON object → encodes as base64 → appends as `?config=` URL parameter
+5. Link is copied to clipboard
+6. When someone opens the link, `loadFromURL()` in `src/App.js` (called on mount) automatically:
+   - Decodes the base64 parameter
+   - Applies the model, colors, and option selections
+   - Cleans the URL (removes `?config=` so it looks normal)
+
+#### URL format
+
 ```
 https://yoursite.com/?config=eyJtIjoiUG9sb1NoaXJ0IiwiYyI6ey4uLn0sInMiOnsic...
 ```
 
-The JSON payload contains:
-- `m` — model name
-- `c` — colors object (all part colors)
-- `s` — custom options selections
+The base64-encoded JSON payload structure:
+```js
+{
+  "m": "PoloShirt",                                    // model name
+  "c": { "body": "#ff0000", "sleeves": "#ffffff" },    // all part colors
+  "s": { "fabric": "polyester", "rushOrder": true }     // custom option selections
+}
+```
 
-On page load, `loadFromURL()` in `src/utils/shareLink.js` checks for this parameter, applies the configuration, and cleans the URL.
+#### Enable / Disable
+
+In `src/config/models.js`, inside `customOptions.features`:
+```js
+features: {
+  shareLink: true,   // show "Copy Share Link" button
+  // shareLink: false, // hide button — no sharing
+}
+```
+
+#### How to add more data to the share link
+
+If you want to include additional data in the shared URL (e.g. logo/text placements, product note), edit `src/utils/shareLink.js`:
+
+1. In `generateShareURL()` — add the data to the `payload` object:
+   ```js
+   const payload = {
+     m: modelName,
+     c: { ...state.colors },
+     s: { ...customOptionsState.selections },
+     // Add your new data here:
+     n: productNote,           // example: product note
+     l: logoTextState.items,   // example: placed logos/text
+   };
+   ```
+
+2. In `loadFromURL()` — read and apply the new data:
+   ```js
+   const { m, c, s, n, l } = payload;
+   // Apply your new data here:
+   if (n) setProductNote(n);
+   if (l) applyLogoItems(l);
+   ```
+
+#### Key files
+
+| File | Purpose |
+|------|---------|
+| `src/utils/shareLink.js` | `generateShareURL()` — encodes config to URL. `loadFromURL()` — decodes and applies |
+| `src/App.js` | Calls `loadFromURL()` on mount (in `useEffect`) |
+| `src/Components/CustomOptionsPanel.jsx` | "Copy Share Link" button UI and clipboard logic |
+| `src/config/models.js` | `features.shareLink` toggle per model |
 
 ### Product Note
 

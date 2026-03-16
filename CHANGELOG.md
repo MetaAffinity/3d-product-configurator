@@ -20,6 +20,10 @@ For full developer instructions (how to add models, patterns, options), see **[D
 
 ### Changed
 - **Annotation modal renders on main screen** — Now uses React portal (`document.body`) so it opens as a centered modal overlay on the full screen, not squeezed inside the offcanvas sidebar.
+- **Option choices grid layout** — Select options now display in a 3-per-row compact grid instead of stacked full-width rows. Saves vertical space in the panel.
+
+### Fixed
+- **PoloShirt drag performance lag** — Model was slow when rotating/dragging. Fixed by using stable `useCallback` pointer handlers, `hoveredRef` to skip redundant state updates, and narrowing cursor SVG effect dependency from full color snapshot to only the hovered part's color.
 
 ### Removed
 - **Undo/Redo buttons** — Removed from custom options panel as they were unnecessary for option selections.

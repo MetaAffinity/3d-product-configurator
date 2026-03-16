@@ -1039,6 +1039,55 @@ Both `LogoTextPanel` and `CustomOptionsPanel` accept an `embedded` prop:
 
 ---
 
+## Performance Tips for Model Components
+
+When creating or editing model components, follow these patterns to prevent drag/rotation lag:
+
+### Use `useCallback` for pointer handlers
+
+Inline arrow functions on `onPointerOver`, `onPointerOut`, `onPointerDown` create new closures every render, triggering unnecessary re-renders in React Three Fiber. Wrap them in `useCallback`:
+
+```jsx
+const hoveredRef = useRef(null);
+
+const onPointerOver = useCallback((e) => {
+  e.stopPropagation();
+  const name = e.object.material.name;
+  if (hoveredRef.current !== name) {   // skip if same part already hovered
+    hoveredRef.current = name;
+    setHovered(name);
+  }
+}, []);
+
+const onPointerOut = useCallback((e) => {
+  if (e.intersections.length === 0) {
+    hoveredRef.current = null;
+    setHovered(null);
+  }
+}, []);
+```
+
+The `hoveredRef` check prevents `setHovered` from being called repeatedly with the same value during drag, which would cause unnecessary re-renders.
+
+### Narrow cursor SVG effect dependencies
+
+The custom cursor SVG uses `btoa()` to encode the SVG — this is expensive. Don't depend on the entire `snap` (colors proxy):
+
+```jsx
+// BAD — re-runs when ANY color changes
+useEffect(() => { ... }, [hovered, snap]);
+
+// GOOD — only re-runs when hovered part's specific color changes
+const hoveredColor = hovered ? snap[hovered] : null;
+useEffect(() => { ... }, [hovered, hoveredColor]);
+```
+
+### Reference: PoloShirt.js
+
+`src/Components/PoloShirt.js` demonstrates all these patterns. Use it as a template when creating new model components.
+
+---
+
 ## File Reference
 
 | File | Purpose | Edit when |

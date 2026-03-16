@@ -9,26 +9,45 @@ import {
 import { exportPDF } from "../utils/pdfExport";
 import { MdAddAPhoto, MdClose } from "react-icons/md";
 
+function captureCanvas() {
+  const canvas = document.querySelector("canvas");
+  if (!canvas) return null;
+  try {
+    return canvas.toDataURL("image/png");
+  } catch (_) {
+    return null;
+  }
+}
+
 export default function CustomOptionsPanel({ modelName, embedded }) {
   const snap = useSnapshot(customOptionsState);
   const cfg = modelConfig[modelName]?.customOptions;
-  const [views, setViews] = useState([]);
+  const [extraViews, setExtraViews] = useState([]);
 
   const captureView = useCallback(() => {
-    const canvas = document.querySelector("canvas");
-    if (!canvas) return;
-    try {
-      const dataURL = canvas.toDataURL("image/png");
-      setViews((prev) => [
-        ...prev,
-        { label: `View ${prev.length + 1}`, dataURL },
-      ]);
-    } catch (_) {}
+    const dataURL = captureCanvas();
+    if (!dataURL) return;
+    setExtraViews((prev) => [
+      ...prev,
+      { label: `View ${prev.length + 1}`, dataURL },
+    ]);
   }, []);
 
   const removeView = useCallback((index) => {
-    setViews((prev) => prev.filter((_, i) => i !== index));
+    setExtraViews((prev) => prev.filter((_, i) => i !== index));
   }, []);
+
+  const handleExport = useCallback(() => {
+    // Always capture current view as default
+    const defaultView = captureCanvas();
+    const allViews = [];
+    if (defaultView) {
+      allViews.push({ label: "Default View", dataURL: defaultView });
+    }
+    // Append any custom captured shots
+    allViews.push(...extraViews);
+    exportPDF(modelName, allViews);
+  }, [modelName, extraViews]);
 
   if (!cfg?.enabled) return null;
 
@@ -85,16 +104,17 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
 
       <div className="co-divider" />
 
-      {/* Capture Views Section */}
-      <label className="co-group-label">Product Views for PDF</label>
+      {/* Custom Views Section */}
+      <label className="co-group-label">Additional Views (optional)</label>
+      <p className="co-views-hint">Rotate the model, then capture extra angles for the PDF.</p>
       <button className="co-capture-btn" onClick={captureView}>
         <MdAddAPhoto size={16} />
         <span>Capture Current View</span>
       </button>
 
-      {views.length > 0 && (
+      {extraViews.length > 0 && (
         <div className="co-views-grid">
-          {views.map((view, i) => (
+          {extraViews.map((view, i) => (
             <div key={i} className="co-view-thumb">
               <img src={view.dataURL} alt={view.label} />
               <span className="co-view-label">{view.label}</span>
@@ -106,13 +126,9 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
         </div>
       )}
 
-      <button
-        className="co-pdf-btn"
-        onClick={() => exportPDF(modelName, views)}
-        disabled={views.length === 0}
-        title={views.length === 0 ? "Capture at least one view first" : ""}
-      >
-        Download PDF {views.length > 0 && `(${views.length} view${views.length > 1 ? "s" : ""})`}
+      <button className="co-pdf-btn" onClick={handleExport}>
+        Download PDF
+        {extraViews.length > 0 && ` (1 + ${extraViews.length} views)`}
       </button>
     </div>
   );

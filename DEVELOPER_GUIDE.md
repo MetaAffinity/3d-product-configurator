@@ -1041,11 +1041,38 @@ Both `LogoTextPanel` and `CustomOptionsPanel` accept an `embedded` prop:
 
 ## Performance Tips for Model Components
 
-When creating or editing model components, follow these patterns to prevent drag/rotation lag:
+When creating or editing model components, follow these patterns to prevent drag/rotation lag.
+
+### Use `meshBounds` for high-poly models (most important)
+
+**Problem:** React Three Fiber does **per-triangle raycasting** on every mouse move — even during OrbitControls drag. If a model's GLB has high-polygon geometry, this causes visible stutter/lag when rotating.
+
+**Symptom:** Model drags slowly or stutters compared to simpler models.
+
+**Fix:** Import `meshBounds` from drei and add `raycast={meshBounds}` to each `<mesh>`:
+
+```jsx
+import { useGLTF, meshBounds } from "@react-three/drei";
+
+// Inside component:
+<mesh
+  raycast={meshBounds}    // ← bounding sphere raycasting instead of per-triangle
+  castShadow
+  geometry={nodes.body.geometry}
+  material={mats.body}
+  material-color={snap.body}
+/>
+```
+
+**How it works:** Replaces O(n triangles) intersection testing with O(1) bounding sphere check. Hover detection still works (slightly less precise at edges — triggers at bounding sphere boundary instead of exact mesh surface), but drag/rotation becomes buttery smooth.
+
+**When to use:** Apply `meshBounds` when a model lags during drag. Not needed for simple/low-poly models (Shoe, Rocket, etc.) that are already smooth. Currently applied to **PoloShirt** only.
+
+**Real example:** PoloShirt (1.8MB GLB, high-poly cloth geometry) was stuttering badly during drag. Adding `meshBounds` to its 3 meshes fixed it completely — now matches performance of all other models.
 
 ### Use `useCallback` for pointer handlers
 
-Inline arrow functions on `onPointerOver`, `onPointerOut`, `onPointerDown` create new closures every render, triggering unnecessary re-renders in React Three Fiber. Wrap them in `useCallback`:
+Inline arrow functions on `onPointerOver`, `onPointerOut`, `onPointerDown` create new closures every render. Wrap them in `useCallback`:
 
 ```jsx
 const hoveredRef = useRef(null);
@@ -1082,9 +1109,18 @@ const hoveredColor = hovered ? snap[hovered] : null;
 useEffect(() => { ... }, [hovered, hoveredColor]);
 ```
 
+### Quick diagnosis checklist
+
+If a model is lagging during drag:
+
+1. **Add `raycast={meshBounds}`** to all `<mesh>` elements — this fixes 90% of cases
+2. **Wrap pointer handlers** in `useCallback` with `hoveredRef` guard
+3. **Narrow cursor effect** dependency to `hoveredColor` instead of full `snap`
+4. If still slow, check GLB file size — consider decimating geometry in Blender
+
 ### Reference: PoloShirt.js
 
-`src/Components/PoloShirt.js` demonstrates all these patterns. Use it as a template when creating new model components.
+`src/Components/PoloShirt.js` demonstrates all these patterns. Use it as a template when creating new model components or fixing performance on existing ones.
 
 ---
 

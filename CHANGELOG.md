@@ -23,7 +23,7 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - **Option choices grid layout** — Select options now display in a 3-per-row compact grid instead of stacked full-width rows. Saves vertical space in the panel.
 
 ### Fixed
-- **PoloShirt drag performance lag** — Model was slow when rotating/dragging. Fixed by using stable `useCallback` pointer handlers, `hoveredRef` to skip redundant state updates, and narrowing cursor SVG effect dependency from full color snapshot to only the hovered part's color.
+- **PoloShirt drag performance lag** — Model was stuttering/lagging when rotating or dragging, while all other models were smooth. **Cause:** React Three Fiber does per-triangle raycasting on every mouse move (including during OrbitControls drag). PoloShirt's GLB has high-polygon geometry (1.8MB), so thousands of triangle intersection tests were running every frame. **Fix:** Added `meshBounds` from drei on all PoloShirt meshes — replaces per-triangle raycasting with O(1) bounding sphere check. Also added `useCallback` on pointer handlers and `hoveredRef` to skip redundant state updates. If any other model has similar lag in the future, add `raycast={meshBounds}` to its `<mesh>` elements (see `PoloShirt.js` for reference).
 
 ### Removed
 - **Undo/Redo buttons** — Removed from custom options panel as they were unnecessary for option selections.

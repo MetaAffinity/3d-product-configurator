@@ -13,7 +13,19 @@ function captureCanvas() {
   const canvas = document.querySelector("canvas");
   if (!canvas) return null;
   try {
-    return canvas.toDataURL("image/png");
+    // Crop to center square to remove excess whitespace on sides
+    const w = canvas.width;
+    const h = canvas.height;
+    const cropSize = Math.min(w, h);
+    const sx = (w - cropSize) / 2;
+    const sy = (h - cropSize) / 2;
+
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = cropSize;
+    tempCanvas.height = cropSize;
+    const ctx = tempCanvas.getContext("2d");
+    ctx.drawImage(canvas, sx, sy, cropSize, cropSize, 0, 0, cropSize, cropSize);
+    return tempCanvas.toDataURL("image/png");
   } catch (_) {
     return null;
   }

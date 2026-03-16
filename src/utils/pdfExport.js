@@ -28,15 +28,11 @@ export function exportPDF(modelName, views) {
   // Render captured views
   const imgs = views || [];
   if (imgs.length > 0) {
-    // Calculate image dimensions from first image's aspect ratio
-    const canvas = document.querySelector("canvas");
-    let aspect = 4 / 3;
-    if (canvas) aspect = canvas.width / canvas.height;
-
+    // Images are center-cropped to square (1:1 aspect)
     if (imgs.length === 1) {
       // Single image — large centered
-      const imgW = 140;
-      const imgH = imgW / aspect;
+      const imgW = 110;
+      const imgH = imgW;
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(120);
@@ -47,7 +43,7 @@ export function exportPDF(modelName, views) {
     } else if (imgs.length === 2) {
       // Two images — side by side
       const imgW = 82;
-      const imgH = imgW / aspect;
+      const imgH = imgW;
       const gap = 6;
       const startX = (pageW - (imgW * 2 + gap)) / 2;
 
@@ -63,7 +59,7 @@ export function exportPDF(modelName, views) {
     } else {
       // 3+ images — grid of 2 per row
       const imgW = 82;
-      const imgH = imgW / aspect;
+      const imgH = imgW;
       const gap = 6;
       const startX = (pageW - (imgW * 2 + gap)) / 2;
 

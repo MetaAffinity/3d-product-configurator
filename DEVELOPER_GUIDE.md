@@ -755,8 +755,8 @@ For **toggle** groups: the price is added only when the toggle is on.
 
 The "Download PDF" button generates an A4 PDF containing:
 - Product name as title
-- **Default View** — automatically captured from the current canvas when user clicks Download
-- **Custom Views (optional)** — user can rotate the model and click "Capture Current View" to add extra angles
+- **Default View** — automatically captured from the current canvas when user clicks Download (only if no custom views were captured)
+- **Custom Views** — user can rotate the model and click "Capture Current View" to add specific angles. When custom views exist, only those are used (no default)
 - Base price
 - Table of all selected options with their prices
 - Calculated total
@@ -768,8 +768,8 @@ PDF is generated **client-side** using [jsPDF](https://github.com/parallax/jsPDF
 
 #### How view capture works
 
-1. **Default View**: When "Download PDF" is clicked, the current canvas is captured automatically as "Default View"
-2. **Custom Views**: User rotates the model to any angle, then clicks "Capture Current View" button. The offcanvas drawer has no backdrop for custom options, so the canvas is fully interactive while the panel is open
+1. **Default View**: When "Download PDF" is clicked and no custom views exist, the current canvas is captured automatically as "Default View"
+2. **Custom Views**: User rotates the model to any angle, then clicks "Capture Current View" button. When custom views are present, only those are included in the PDF (default view is skipped). The offcanvas drawer has no backdrop for custom options, so the canvas is fully interactive while the panel is open
 3. **Center crop**: All captures are center-cropped to a square from the wide canvas, removing excess whitespace on the sides so the product fills more of the image
 4. **PDF layout**: 1 view = large centered (110mm), 2 views = side by side (82mm each), 3+ views = 2-per-row grid
 

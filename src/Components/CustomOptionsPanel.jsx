@@ -50,14 +50,15 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
   }, []);
 
   const handleExport = useCallback(() => {
-    // Always capture current view as default
-    const defaultView = captureCanvas();
-    const allViews = [];
-    if (defaultView) {
-      allViews.push({ label: "Default View", dataURL: defaultView });
+    let allViews;
+    if (extraViews.length > 0) {
+      // User captured custom views — use only those
+      allViews = extraViews;
+    } else {
+      // No custom views — capture current canvas as default
+      const defaultView = captureCanvas();
+      allViews = defaultView ? [{ label: "Default View", dataURL: defaultView }] : [];
     }
-    // Append any custom captured shots
-    allViews.push(...extraViews);
     exportPDF(modelName, allViews);
   }, [modelName, extraViews]);
 

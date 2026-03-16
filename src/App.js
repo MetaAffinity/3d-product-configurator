@@ -145,8 +145,8 @@ function App() {
       <ModelPicker updateSelectedModel={handleModelChange} selectedModel={selectedModel} />
       <ColorPicker state={state} updateColor={updateColor} updateTexture={updateTexture} modelName={selectedModel} />
       <PartsPicker state={state} updateCurrent={handlePartSelect} modelName={selectedModel} />
-      {/* Offcanvas backdrop */}
-      {offcanvas && (
+      {/* Offcanvas backdrop — only for logoText (custom options needs canvas interaction) */}
+      {offcanvas === "logoText" && (
         <div className="offcanvas-backdrop" onClick={() => setOffcanvas(null)} />
       )}
       {/* Offcanvas drawer */}

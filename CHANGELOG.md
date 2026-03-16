@@ -17,15 +17,15 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - **Hoodie custom options** — Logo Type, Fabric (Fleece/Polyester/Organic), Inner Lining (Standard/Sherpa), Rush Production. Base price $35.
 
 ### Changed
-- **Logo/Text panel moved to top-left** — Toggle button and panel relocated from bottom-left to top-left corner, freeing bottom area for price module.
+- **Logo/Text & Options buttons relocated** — Both buttons moved below the color picker (bottom-left), stacked vertically as `.left-action-buttons` group. Only one panel open at a time. Panels open upward from the buttons.
 
 ### Technical
 - `src/config/customOptionsState.js` — Valtio proxy for custom option selections with per-model save/restore.
 - `src/utils/pdfExport.js` — jsPDF-based PDF generation with canvas screenshot capture.
 - `src/Components/CustomOptionsPanel.jsx` — UI panel with select cards, toggle switches, total, PDF button.
-- `src/App.js` — Toggle button for Options panel, `switchCustomOptionsModel` on model change.
+- `src/App.js` — Toggle buttons wrapped in `.left-action-buttons` container, mutual exclusion (one panel at a time), `switchCustomOptionsModel` on model change.
 - `src/config/models.js` — `customOptions` config blocks added to PoloShirt and Hoodie.
-- `src/index.scss` — `.co-toggle-btn`, `.custom-options-panel` styles.
+- `src/index.scss` — `.left-action-buttons`, `.left-action-btn`, `.custom-options-panel`, `.logtext-panel` repositioned to bottom-left.
 
 ---
 

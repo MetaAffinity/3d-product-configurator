@@ -158,24 +158,26 @@ function App() {
         onZoomIn={() => handleZoom("in")}
         onZoomOut={() => handleZoom("out")}
       />
-      <button
-        className={`logtext-toggle-btn ${showLogoText ? "active" : ""}`}
-        onClick={() => setShowLogoText((p) => !p)}
-        title="Logo / Text"
-      >
-        <MdTextFields size={18} />
-        <span>Logo / Text</span>
-      </button>
-      {modelConfig[selectedModel]?.customOptions?.enabled && (
+      <div className="left-action-buttons">
         <button
-          className={`co-toggle-btn ${showCustomOptions ? "active" : ""}`}
-          onClick={() => setShowCustomOptions((p) => !p)}
-          title="Custom Options"
+          className={`left-action-btn ${showLogoText ? "active" : ""}`}
+          onClick={() => { setShowLogoText((p) => !p); setShowCustomOptions(false); }}
+          title="Logo / Text"
         >
-          <MdTune size={18} />
-          <span>Options & Price</span>
+          <MdTextFields size={18} />
+          <span>Logo / Text</span>
         </button>
-      )}
+        {modelConfig[selectedModel]?.customOptions?.enabled && (
+          <button
+            className={`left-action-btn ${showCustomOptions ? "active" : ""}`}
+            onClick={() => { setShowCustomOptions((p) => !p); setShowLogoText(false); }}
+            title="Custom Options"
+          >
+            <MdTune size={18} />
+            <span>Options & Price</span>
+          </button>
+        )}
+      </div>
       <Canvas shadows camera={{ position: [1, 0, 2] }} gl={{ preserveDrawingBuffer: true }}>
         <ambientLight />
         <spotLight intensity={0.5} penumbra={1} position={[7, 15, 10]} castShadow />

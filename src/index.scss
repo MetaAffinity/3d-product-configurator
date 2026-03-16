@@ -381,26 +381,33 @@ code {
   }
 }
 
-// ── Logo / Text toggle button (floating above toolbar) ───────────────
-.logtext-toggle-btn {
+// ── Left action buttons (below color picker) ─────────────────────────
+.left-action-buttons {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  bottom: 18%;
+  left: 5%;
   z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.left-action-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border: none;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
-  border-radius: 20px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 13px;
   color: #555;
   font-family: inherit;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
+  white-space: nowrap;
 
   &:hover {
     background: rgba(255, 255, 255, 0.95);
@@ -416,10 +423,10 @@ code {
 // ── Logo / Text panel ─────────────────────────────────────────────────
 .logtext-panel {
   position: absolute;
-  top: 56px;
-  left: 16px;
-  z-index: 10;
-  max-height: 75vh;
+  bottom: 30%;
+  left: 5%;
+  z-index: 11;
+  max-height: 55vh;
   overflow-y: auto;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
@@ -784,44 +791,12 @@ code {
   }
 }
 
-// ── Custom Options toggle button ──────────────────────────────────────
-.co-toggle-btn {
-  position: absolute;
-  top: 16px;
-  left: 190px;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border: none;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 13px;
-  color: #555;
-  font-family: inherit;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.95);
-    color: #222;
-  }
-
-  &.active {
-    background: #333;
-    color: #fff;
-  }
-}
-
 // ── Custom Options panel ─────────────────────────────────────────────
 .custom-options-panel {
   position: absolute;
-  top: 56px;
-  left: 190px;
-  z-index: 10;
+  bottom: 30%;
+  left: 5%;
+  z-index: 11;
   max-height: 75vh;
   overflow-y: auto;
   background: rgba(255, 255, 255, 0.92);

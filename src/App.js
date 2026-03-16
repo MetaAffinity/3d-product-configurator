@@ -161,7 +161,7 @@ function App() {
         </div>
         <div className="offcanvas-body">
           {offcanvas === "logoText" && <LogoTextPanel modelName={selectedModel} embedded />}
-          {offcanvas === "customOptions" && <CustomOptionsPanel modelName={selectedModel} embedded />}
+          {offcanvas === "customOptions" && <CustomOptionsPanel modelName={selectedModel} embedded controlsRef={controls.current} />}
         </div>
       </div>
       <Toolbar

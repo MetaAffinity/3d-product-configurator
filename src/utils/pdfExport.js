@@ -3,10 +3,33 @@ import { getTotal, getSelectedSummary } from "../config/customOptionsState";
 import { modelConfig } from "../config/models";
 
 /**
- * Generate a PDF summary of the product configuration.
- * Captures the 3D canvas as a screenshot and lists selected options with prices.
+ * Capture canvas screenshot as data URL.
  */
-export function exportPDF(modelName) {
+function captureCanvas() {
+  const canvas = document.querySelector("canvas");
+  if (!canvas) return null;
+  try {
+    return canvas.toDataURL("image/png");
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
+ * Wait for next animation frame + a small delay for render to complete.
+ */
+function waitFrame(ms = 100) {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => setTimeout(resolve, ms));
+  });
+}
+
+/**
+ * Generate a PDF summary with front & back views of the product.
+ * @param {string} modelName
+ * @param {object} controlsRef — ref to OrbitControls (controls.current)
+ */
+export async function exportPDF(modelName, controlsRef) {
   const cfg = modelConfig[modelName]?.customOptions;
   if (!cfg?.enabled) return;
 
@@ -24,19 +47,62 @@ export function exportPDF(modelName) {
   doc.text(`${modelName} — Custom Configuration`, pageW / 2, y, { align: "center" });
   y += 12;
 
-  // Screenshot from canvas
+  // Calculate proper image dimensions from canvas aspect ratio
   const canvas = document.querySelector("canvas");
+  const maxImgW = 80;
+  let imgW = maxImgW;
+  let imgH = 60;
   if (canvas) {
-    try {
-      const imgData = canvas.toDataURL("image/png");
-      const imgW = 120;
-      const imgH = 90;
-      doc.addImage(imgData, "PNG", (pageW - imgW) / 2, y, imgW, imgH);
-      y += imgH + 10;
-    } catch (_) {
-      // canvas tainted or unavailable — skip image
-    }
+    const aspect = canvas.width / canvas.height;
+    imgH = maxImgW / aspect;
   }
+
+  // Capture front view
+  const frontImg = captureCanvas();
+
+  // Capture back view by rotating camera
+  let backImg = null;
+  if (controlsRef) {
+    const savedAzimuthal = controlsRef.getAzimuthalAngle();
+    const savedPolar = controlsRef.getPolarAngle();
+
+    // Rotate to back (π radians from current)
+    controlsRef.setAzimuthalAngle(savedAzimuthal + Math.PI);
+    controlsRef.update();
+    await waitFrame(200);
+
+    backImg = captureCanvas();
+
+    // Restore original camera position
+    controlsRef.setAzimuthalAngle(savedAzimuthal);
+    controlsRef.setPolarAngle(savedPolar);
+    controlsRef.update();
+  }
+
+  // Add images side by side
+  if (frontImg && backImg) {
+    const gap = 6;
+    const totalW = imgW * 2 + gap;
+    const startX = (pageW - totalW) / 2;
+
+    // Labels
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120);
+    doc.text("Front", startX + imgW / 2, y, { align: "center" });
+    doc.text("Back", startX + imgW + gap + imgW / 2, y, { align: "center" });
+    y += 4;
+
+    doc.addImage(frontImg, "PNG", startX, y, imgW, imgH);
+    doc.addImage(backImg, "PNG", startX + imgW + gap, y, imgW, imgH);
+    y += imgH + 8;
+  } else if (frontImg) {
+    // Single image centered
+    doc.addImage(frontImg, "PNG", (pageW - imgW) / 2, y, imgW, imgH);
+    y += imgH + 8;
+  }
+
+  doc.setTextColor(0);
 
   // Divider
   doc.setDrawColor(200);

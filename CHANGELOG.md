@@ -17,7 +17,10 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - **Hoodie custom options** — Logo Type, Fabric (Fleece/Polyester/Organic), Inner Lining (Standard/Sherpa), Rush Production. Base price $35.
 
 ### Changed
-- **Logo/Text & Options buttons relocated** — Both buttons moved below the color picker (bottom-left), stacked vertically as `.left-action-buttons` group. Only one panel open at a time. Panels open upward from the buttons.
+- **Offcanvas drawer for panels** — Logo/Text and Custom Options panels now open in a slide-in drawer from the left edge with smooth CSS animation (`translateX` + cubic-bezier easing). Content items stagger in with `slideUp` animation. Backdrop click or close button to dismiss. Both buttons sit below the color picker (bottom-left).
+
+### Fixed
+- **Decal text bleeding through** — Text placed on the back was visible from the front due to `depthTest: false`. Fixed by enabling depth testing on decal materials.
 
 ### Technical
 - `src/config/customOptionsState.js` — Valtio proxy for custom option selections with per-model save/restore.

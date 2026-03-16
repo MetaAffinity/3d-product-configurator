@@ -8,7 +8,7 @@ import {
 } from "../config/customOptionsState";
 import { exportPDF } from "../utils/pdfExport";
 
-export default function CustomOptionsPanel({ modelName, embedded }) {
+export default function CustomOptionsPanel({ modelName, embedded, controlsRef }) {
   const snap = useSnapshot(customOptionsState);
   const cfg = modelConfig[modelName]?.customOptions;
 
@@ -65,7 +65,7 @@ export default function CustomOptionsPanel({ modelName, embedded }) {
         <span className="co-total-price">{currency} {total.toFixed(2)}</span>
       </div>
 
-      <button className="co-pdf-btn" onClick={() => exportPDF(modelName)}>
+      <button className="co-pdf-btn" onClick={() => exportPDF(modelName, controlsRef)}>
         Download PDF
       </button>
     </div>

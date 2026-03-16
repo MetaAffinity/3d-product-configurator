@@ -14,7 +14,8 @@ Complete reference for adding new models, patterns, options, and customizing the
 6. [Per-Model Camera Settings](#per-model-camera-settings)
 7. [Logo / Text Overlay (Multi-Overlay)](#logo--text-overlay)
 8. [Custom Options & Pricing](#custom-options--pricing)
-9. [File Reference](#file-reference)
+9. [Offcanvas Drawer (Logo/Text & Options Panels)](#offcanvas-drawer)
+10. [File Reference](#file-reference)
 
 ---
 
@@ -770,6 +771,58 @@ PDF is generated client-side using jsPDF — no server needed.
 | `src/Components/CustomOptionsPanel.jsx` | UI panel — option cards, toggles, total, PDF button |
 | `src/utils/pdfExport.js` | PDF generation with jsPDF |
 | `src/App.js` | Toggle button, panel rendering, model switch integration |
+
+---
+
+## Offcanvas Drawer
+
+The Logo/Text and Custom Options panels are rendered inside an **offcanvas drawer** that slides in from the left edge of the screen.
+
+### How it works
+
+- Two action buttons sit below the color picker (bottom-left): **Logo / Text** and **Options & Price**
+- Clicking a button opens the offcanvas drawer with the corresponding panel content
+- Only one panel is open at a time — clicking the other button swaps the content
+- A semi-transparent **backdrop** covers the rest of the screen; clicking it closes the drawer
+- A **close button** (X icon) is in the drawer header
+
+### Where to modify
+
+| What | File | Details |
+|------|------|---------|
+| Offcanvas open/close logic | `src/App.js` | State: `offcanvas` (`null`, `"logoText"`, `"customOptions"`). Buttons in `.left-action-buttons` div toggle state. Drawer renders based on state. |
+| Drawer HTML structure | `src/App.js` | `.offcanvas-backdrop`, `.offcanvas-drawer` (header + body), renders `LogoTextPanel` or `CustomOptionsPanel` with `embedded` prop |
+| Drawer slide animation | `src/index.scss` | `.offcanvas-drawer` uses `transform: translateX(-100%)` → `translateX(0)` with `cubic-bezier(0.22, 1, 0.36, 1)` easing (0.35s) |
+| Backdrop fade | `src/index.scss` | `.offcanvas-backdrop` uses `@keyframes fadeIn` (0.25s) |
+| Content stagger animation | `src/index.scss` | `@keyframes slideUp` — items inside `.logtext-panel-embedded` and `.co-group` animate in with staggered delays (0.05s per item) |
+| Drawer width | `src/index.scss` | `.offcanvas-drawer { width: 320px }` — change this to make drawer wider/narrower |
+| Button position | `src/index.scss` | `.left-action-buttons { bottom: 18%; left: 5% }` — reposition the toggle buttons |
+
+### Embedded prop
+
+Both `LogoTextPanel` and `CustomOptionsPanel` accept an `embedded` prop:
+- When `embedded` is true, the panel renders without its own positioning wrapper (no absolute positioning, no background/shadow) — it becomes a plain content block inside the offcanvas body
+- When `embedded` is false/absent, the panel renders as a standalone floating panel (backward compatible)
+
+### Adding a new panel to the offcanvas
+
+1. Create your panel component accepting an `embedded` prop
+2. In `src/App.js`, add a new state value (e.g. `"myPanel"`) to the `offcanvas` state
+3. Add a button in `.left-action-buttons`:
+   ```jsx
+   <button
+     className={`left-action-btn ${offcanvas === "myPanel" ? "active" : ""}`}
+     onClick={() => setOffcanvas((p) => p === "myPanel" ? null : "myPanel")}
+   >
+     <MyIcon size={18} />
+     <span>My Panel</span>
+   </button>
+   ```
+4. Add the panel render in `.offcanvas-body`:
+   ```jsx
+   {offcanvas === "myPanel" && <MyPanel embedded />}
+   ```
+5. Add the title in `.offcanvas-title` conditional
 
 ---
 

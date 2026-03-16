@@ -933,16 +933,17 @@ code {
   }
 
   .co-choices {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
   }
 
   .co-choice {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 8px 10px;
+    text-align: center;
+    padding: 8px 4px;
     border: 1.5px solid rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     cursor: pointer;
@@ -959,14 +960,16 @@ code {
     }
 
     .co-choice-label {
-      font-size: 13px;
+      font-size: 11px;
       color: #333;
+      line-height: 1.2;
     }
 
     .co-choice-price {
-      font-size: 11px;
+      font-size: 9px;
       color: #888;
       font-weight: 500;
+      margin-top: 2px;
     }
 
     &.active .co-choice-label {

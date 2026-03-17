@@ -14,6 +14,7 @@ export default function DevCredits() {
     <>
       {/* Logo badge */}
       <div className="dev-credit-badge" onClick={handleOpen} title="Developer Credits">
+        <span className="dev-credit-badge-label">Developed by</span>
         <img src={metaAffinityLogo} alt="MetaAffinity" className="dev-credit-logo" />
       </div>
 

@@ -154,16 +154,186 @@ code {
   }
 }
 
-.info-icon {
+// ── Developer Credits Badge & Modal ──────────────────────────────────────
+.dev-credit-badge {
   position: absolute;
   bottom: 5%;
   left: 5%;
+  z-index: 10;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 10px;
+  padding: 4px;
+
+  &:hover {
+    transform: scale(1.12);
+    filter: drop-shadow(0 4px 12px rgba(108, 99, 255, 0.4));
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.dev-credit-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+// ── Credits overlay ──────────────────────────────────────────────────────
+.dev-credit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: #999;
-  opacity: 0.8;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  animation: devCreditFadeIn 0.4s ease;
+}
+
+@keyframes devCreditFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dev-credit-modal {
+  position: relative;
+  width: 420px;
+  max-width: 92vw;
+  height: 480px;
+  max-height: 85vh;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 80px rgba(108, 99, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: devCreditSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes devCreditSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dev-credit-canvas-wrap {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0f0c29, #1a1040, #24243e);
+}
+
+.dev-credit-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dev-credit-hero-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(108, 99, 255, 0.4);
+  margin-bottom: 16px;
+  animation: devCreditLogoPulse 3s ease-in-out infinite;
+  pointer-events: auto;
+}
+
+@keyframes devCreditLogoPulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(108, 99, 255, 0.4); }
+  50% { box-shadow: 0 8px 48px rgba(0, 212, 255, 0.5), 0 0 20px rgba(108, 99, 255, 0.3); }
+}
+
+.dev-credit-name {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 16px rgba(108, 99, 255, 0.5);
+  animation: devCreditTextGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes devCreditTextGlow {
+  from { text-shadow: 0 2px 16px rgba(108, 99, 255, 0.5); }
+  to { text-shadow: 0 2px 24px rgba(0, 212, 255, 0.6), 0 0 40px rgba(108, 99, 255, 0.3); }
+}
+
+.dev-credit-role {
+  margin: 6px 0 24px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.dev-credit-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+  pointer-events: auto;
+}
+
+.dev-credit-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+
+  &:hover {
+    background: rgba(108, 99, 255, 0.2);
+    border-color: rgba(108, 99, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 99, 255, 0.25);
+  }
+}
+
+.dev-credit-link-icon {
+  font-size: 18px;
+}
+
+.dev-credit-close-btn {
+  pointer-events: auto;
+  padding: 8px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.35);
+  }
 }
 
 .hidden {

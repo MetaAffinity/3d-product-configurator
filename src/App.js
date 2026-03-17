@@ -14,7 +14,7 @@ import { modelConfig, modelStates, defaultModel } from "./config/models";
 import { switchLogoTextModel } from "./config/logoTextState";
 import { switchCustomOptionsModel } from "./config/customOptionsState";
 import { loadFromURL } from "./utils/shareLink";
-import { AiOutlineUser } from "react-icons/ai";
+import DevCredits from "./Components/DevCredits";
 import { MdTextFields, MdTune, MdClose } from "react-icons/md";
 
 function App() {
@@ -220,10 +220,7 @@ function App() {
         </Suspense>
         <OrbitControls ref={controls} maxDistance={5} minDistance={config.minDistance || 1.5} autoRotate={isRotating} autoRotateSpeed={4} />
       </Canvas>
-      <div className="info-icon">
-        <AiOutlineUser size={14} />
-        <span>metaaffinity.net/3d-product-customizer</span>
-      </div>
+      <DevCredits />
     </>
   );
 }

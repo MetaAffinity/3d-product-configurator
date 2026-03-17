@@ -34,6 +34,7 @@ src/
     LogoTextOverlay.jsx         — 3D decal renderer (multiple items)
     CustomOptionsPanel.jsx      — Custom options & pricing panel (per-model)
     AnnotationCanvas.jsx        — Canvas drawing modal for annotating captured views
+    DevCredits.jsx              — Developer credits badge & Three.js animated overlay
     ModelPicker.jsx             — Top bar model selector thumbnails
     ColorPicker.jsx             — Right panel: color swatches + pattern thumbnails
     PartsPicker.jsx             — Left panel: clickable parts + option toggles
@@ -1039,6 +1040,29 @@ Both `LogoTextPanel` and `CustomOptionsPanel` accept an `embedded` prop:
 
 ---
 
+## Developer Credits (MetaAffinity Branding)
+
+The bottom-left corner shows the **MetaAffinity logo** (`src/img/metaaffinity.png`). Clicking it opens a full-screen overlay with:
+
+- **Three.js animated background** — 300 floating particles, dual orbital rings, and a glowing wireframe icosahedron, all rendered in a secondary R3F `<Canvas>`.
+- **Developer info card** — Glass-morphism card showing name, website link, and email.
+
+### Key file
+
+`src/Components/DevCredits.jsx`
+
+### Customization
+
+| What | Where |
+|------|-------|
+| Change developer name / links | Edit the JSX in `DevCredits.jsx` → `dev-credit-content` section |
+| Change logo | Replace `src/img/metaaffinity.png` |
+| Change particle count / colors | Edit `Particles`, `OrbitalRing`, `CenterGlow` components in `DevCredits.jsx` |
+| Change overlay styling | Edit `.dev-credit-*` classes in `src/index.scss` |
+| Change background gradient | Edit `.dev-credit-canvas-wrap` `background` in `src/index.scss` |
+
+---
+
 ## Performance Tips for Model Components
 
 When creating or editing model components, follow these patterns to prevent drag/rotation lag.
@@ -1142,6 +1166,7 @@ If a model is lagging during drag:
 | `src/utils/createTextTexture.js` | Canvas text renderer | Changing text rendering logic |
 | `src/Components/CustomOptionsPanel.jsx` | Custom options UI panel | Adding UI features to options |
 | `src/Components/AnnotationCanvas.jsx` | Annotation drawing modal | Changing drawing tools or behavior |
+| `src/Components/DevCredits.jsx` | Developer credits badge & Three.js overlay | Changing branding, particle effects, developer info |
 | `src/Components/LogoTextPanel.jsx` | Logo/text UI panel | Adding fonts, UI controls |
 | `src/Components/LogoTextOverlay.jsx` | 3D overlay plane | Changing how overlay renders |
 | `public/index.html` | Google Fonts links | Adding new fonts |

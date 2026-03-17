@@ -19,7 +19,7 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - **Share link** (configurable) — "Copy Share Link" button generates a URL encoding the current model, colors, and option selections. Opening the link auto-applies the configuration. Enable/disable via `features.shareLink`.
 
 ### Changed
-- **MetaAffinity developer branding** — Replaced the plain text info-icon at bottom-left with the MetaAffinity logo. Clicking it opens a stunning developer credits overlay with a Three.js animated particle background (floating particles, orbital rings, glowing wireframe icosahedron) and glass-morphism cards showing developer details (Name, website, email).
+- **MetaAffinity developer branding** — Replaced the plain text info-icon at bottom-left with the MetaAffinity logo (larger 52px badge with glassmorphism). Clicking it opens a developer credits overlay with animated aurora background (3 moving gradient blobs, subtle grid overlay), spinning conic-gradient ring around the logo, staggered text reveal animations, and glassmorphism link cards. Developer details: Muhammad Imran, metaaffinity.net, metaaffinity@gmail.com.
 - **Annotation modal renders on main screen** — Now uses React portal (`document.body`) so it opens as a centered modal overlay on the full screen, not squeezed inside the offcanvas sidebar.
 - **Option choices grid layout** — Select options now display in a 3-per-row compact grid instead of stacked full-width rows. Saves vertical space in the panel.
 
@@ -34,7 +34,7 @@ For full developer instructions (how to add models, patterns, options), see **[D
 - `src/Components/AnnotationCanvas.jsx` — Fullscreen modal via React portal. Tools: pen, arrow, text, eraser. Arrow drawing with preview and arrowhead. Text tool with floating input.
 - `src/utils/pdfExport.js` — Now async. Added branding header, product note section, and QR code generation via `qrcode` package.
 - `src/config/models.js` — Added `branding` and `features` config objects to PoloShirt and Hoodie `customOptions`.
-- `src/Components/DevCredits.jsx` — Developer credits component with Three.js particle animation (300 floating particles, orbital rings, glowing wireframe center). Logo badge replaces old info-icon.
+- `src/Components/DevCredits.jsx` — Developer credits component with aurora animated background and spinning logo ring. Logo badge replaces old info-icon.
 - `src/App.js` — Loads shared configuration from URL on mount via `loadFromURL()`. Replaced info-icon with `<DevCredits />`.
 - `src/index.scss` — Styles for product note, share link, annotation modal (portal), annotation tools, text input, animated total, developer credits overlay with glass-morphism effects.
 - `package.json` — Added `qrcode` dependency.

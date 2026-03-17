@@ -34,7 +34,7 @@ src/
     LogoTextOverlay.jsx         — 3D decal renderer (multiple items)
     CustomOptionsPanel.jsx      — Custom options & pricing panel (per-model)
     AnnotationCanvas.jsx        — Canvas drawing modal for annotating captured views
-    DevCredits.jsx              — Developer credits badge & Three.js animated overlay
+    DevCredits.jsx              — Developer credits badge & aurora animated overlay
     ModelPicker.jsx             — Top bar model selector thumbnails
     ColorPicker.jsx             — Right panel: color swatches + pattern thumbnails
     PartsPicker.jsx             — Left panel: clickable parts + option toggles
@@ -1044,7 +1044,7 @@ Both `LogoTextPanel` and `CustomOptionsPanel` accept an `embedded` prop:
 
 The bottom-left corner shows the **MetaAffinity logo** (`src/img/metaaffinity.png`). Clicking it opens a full-screen overlay with:
 
-- **Three.js animated background** — 300 floating particles, dual orbital rings, and a glowing wireframe icosahedron, all rendered in a secondary R3F `<Canvas>`.
+- **Animated aurora background** — 3 moving gradient blobs with blur, subtle grid overlay, and a spinning conic-gradient ring around the logo. Pure CSS animations — no extra canvas.
 - **Developer info card** — Glass-morphism card showing name, website link, and email.
 
 ### Key file
@@ -1057,7 +1057,7 @@ The bottom-left corner shows the **MetaAffinity logo** (`src/img/metaaffinity.pn
 |------|-------|
 | Change developer name / links | Edit the JSX in `DevCredits.jsx` → `dev-credit-content` section |
 | Change logo | Replace `src/img/metaaffinity.png` |
-| Change particle count / colors | Edit `Particles`, `OrbitalRing`, `CenterGlow` components in `DevCredits.jsx` |
+| Change aurora colors / animation | Edit `.aurora-blob-*` classes and `@keyframes auroraMove*` in `src/index.scss` |
 | Change overlay styling | Edit `.dev-credit-*` classes in `src/index.scss` |
 | Change background gradient | Edit `.dev-credit-canvas-wrap` `background` in `src/index.scss` |
 

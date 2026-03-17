@@ -161,25 +161,29 @@ code {
   left: 5%;
   z-index: 10;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  border-radius: 10px;
-  padding: 4px;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 12px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 
   &:hover {
-    transform: scale(1.12);
-    filter: drop-shadow(0 4px 12px rgba(108, 99, 255, 0.4));
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
 }
 
 .dev-credit-logo {
-  width: 38px;
-  height: 38px;
+  width: 52px;
+  height: 52px;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 10px;
+  display: block;
 }
 
 // ── Credits overlay ──────────────────────────────────────────────────────
@@ -190,97 +194,179 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  animation: devCreditFadeIn 0.4s ease;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(12px);
+  animation: dcFadeIn 0.35s ease;
 }
 
-@keyframes devCreditFadeIn {
+@keyframes dcFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
 .dev-credit-modal {
   position: relative;
-  width: 420px;
-  max-width: 92vw;
-  height: 480px;
-  max-height: 85vh;
-  border-radius: 20px;
+  width: 400px;
+  max-width: 90vw;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 20px 80px rgba(108, 99, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  animation: devCreditSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 60px rgba(99, 102, 241, 0.15);
+  animation: dcSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@keyframes devCreditSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+@keyframes dcSlideUp {
+  from { opacity: 0; transform: translateY(50px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.dev-credit-canvas-wrap {
+// ── Aurora animated background ───────────────────────────────────────────
+.dev-credit-aurora {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0f0c29, #1a1040, #24243e);
+  background: #0a0a1a;
+  overflow: hidden;
 }
 
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.6;
+  mix-blend-mode: screen;
+}
+
+.aurora-blob-1 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+  top: -60px;
+  left: -40px;
+  animation: auroraMove1 8s ease-in-out infinite alternate;
+}
+
+.aurora-blob-2 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+  bottom: -40px;
+  right: -30px;
+  animation: auroraMove2 10s ease-in-out infinite alternate;
+}
+
+.aurora-blob-3 {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, #a855f7 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: auroraMove3 6s ease-in-out infinite alternate;
+}
+
+@keyframes auroraMove1 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(60px, 40px) scale(1.2); }
+}
+
+@keyframes auroraMove2 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(-50px, -30px) scale(1.3); }
+}
+
+@keyframes auroraMove3 {
+  from { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+  to   { transform: translate(-30%, -60%) scale(1.4); opacity: 0.7; }
+}
+
+// Subtle grid overlay for depth
+.aurora-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+// ── Content card ─────────────────────────────────────────────────────────
 .dev-credit-content {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 40px 28px 32px;
+}
+
+// ── Spinning ring around logo ────────────────────────────────────────────
+.dev-credit-logo-ring {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 32px 24px;
-  pointer-events: none;
-  z-index: 1;
+  margin-bottom: 20px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 22px;
+    padding: 2px;
+    background: conic-gradient(
+      from 0deg,
+      #6366f1, #06b6d4, #a855f7, #ec4899, #6366f1
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: dcRingSpin 4s linear infinite;
+  }
+}
+
+@keyframes dcRingSpin {
+  to { transform: rotate(360deg); }
 }
 
 .dev-credit-hero-logo {
-  width: 72px;
-  height: 72px;
+  width: 84px;
+  height: 84px;
   object-fit: contain;
-  border-radius: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(108, 99, 255, 0.4);
-  margin-bottom: 16px;
-  animation: devCreditLogoPulse 3s ease-in-out infinite;
-  pointer-events: auto;
-}
-
-@keyframes devCreditLogoPulse {
-  0%, 100% { box-shadow: 0 8px 32px rgba(108, 99, 255, 0.4); }
-  50% { box-shadow: 0 8px 48px rgba(0, 212, 255, 0.5), 0 0 20px rgba(108, 99, 255, 0.3); }
+  border-radius: 18px;
+  position: relative;
+  z-index: 1;
 }
 
 .dev-credit-name {
   margin: 0;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
   color: #fff;
   text-align: center;
   letter-spacing: 0.5px;
-  text-shadow: 0 2px 16px rgba(108, 99, 255, 0.5);
-  animation: devCreditTextGlow 4s ease-in-out infinite alternate;
-}
-
-@keyframes devCreditTextGlow {
-  from { text-shadow: 0 2px 16px rgba(108, 99, 255, 0.5); }
-  to { text-shadow: 0 2px 24px rgba(0, 212, 255, 0.6), 0 0 40px rgba(108, 99, 255, 0.3); }
+  animation: dcTextReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
 }
 
 .dev-credit-role {
-  margin: 6px 0 24px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  margin: 6px 0 28px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
   text-align: center;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   text-transform: uppercase;
+  animation: dcTextReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
+}
+
+@keyframes dcTextReveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .dev-credit-links {
@@ -288,28 +374,29 @@ code {
   flex-direction: column;
   gap: 10px;
   margin-bottom: 28px;
-  pointer-events: auto;
+  width: 100%;
+  max-width: 280px;
+  animation: dcTextReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
 }
 
 .dev-credit-link {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 20px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #fff;
   text-decoration: none;
   font-size: 14px;
   transition: all 0.3s ease;
-  backdrop-filter: blur(4px);
 
   &:hover {
-    background: rgba(108, 99, 255, 0.2);
-    border-color: rgba(108, 99, 255, 0.4);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.18);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(108, 99, 255, 0.25);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -318,21 +405,21 @@ code {
 }
 
 .dev-credit-close-btn {
-  pointer-events: auto;
-  padding: 8px 28px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 32px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.3s ease;
+  animation: dcTextReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.1);
     color: #fff;
-    border-color: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.25);
   }
 }
 
